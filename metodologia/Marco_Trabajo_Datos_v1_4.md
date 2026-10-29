@@ -19,15 +19,29 @@ El prototipo es uno de los instrumentos de F2: obtiene evidencia y produce medic
 
 Completar una vez por evaluación. La cuenta incluye el contexto del cliente y sus datos; precisar las cuentas AWS cuando formen parte del alcance.
 
-- **Identificación:** evaluación, fecha, evaluador y referentes de negocio y técnicos.
-- **Problema y decisión:** qué ocurre, a quién afecta y qué se necesita decidir. Asignar un REQ por condición necesaria o pregunta derivada del problema.
-- **Datos actuales:** fuentes y procesos relevantes, ubicación, formato o volumen conocido, actualización, responsable y sensibilidad. Registrar cada fuente una sola vez.
-- **Condiciones de uso:** resultado esperado, plazos, restricciones y condiciones esenciales. Indicar quién declaró o confirmó la información.
-- **Límites y dudas:** qué se incluye, qué se excluye y qué falta conocer, con responsable y siguiente paso.
+| Campo | Información a registrar |
+| --- | --- |
+| Identificación | Evaluación, fecha, evaluador y referentes de negocio y técnicos. |
+| Problema y decisión | Qué ocurre, a quién afecta y qué se necesita decidir. Asignar un REQ por condición necesaria o pregunta derivada del problema. |
+| Datos actuales | Fuentes y procesos relevantes, ubicación, formato o volumen conocido, actualización, responsable y sensibilidad. Registrar cada fuente una sola vez. |
+| Condiciones de uso | Resultado esperado, plazos, restricciones y condiciones esenciales. Indicar quién declaró o confirmó la información. |
+| Límites y dudas | Qué se incluye, qué se excluye y qué falta conocer, con responsable y siguiente paso. |
+
+### Preguntas sugeridas
+
+Usar estas preguntas para orientar el registro de la ficha. Las respuestas se anotan en los campos correspondientes, sin duplicarlas en un registro separado.
+
+| ID | Pregunta |
+| --- | --- |
+| P-01 | ¿Qué problema de negocio busca resolver y quién utilizará sus resultados? |
+| P-02 | ¿Qué resultado de negocio se espera y con qué indicadores se reconocerá el éxito? |
+| P-03 | ¿Qué fuentes necesita el caso de uso, dónde están y qué formatos y volúmenes tienen? |
+| P-04 | ¿Qué dificultades existen para obtener los datos? ¿Qué tareas manuales o gestiones se requieren para conseguirlos? |
+| P-05 | ¿Con qué frecuencia se actualizan hoy los datos y con qué frecuencia necesita que se actualicen? |
+| P-06 | ¿Quién responde por cada fuente de datos y quién gestiona la autorización de su uso? |
+| P-07 | ¿Qué información sensible contienen las fuentes y qué requisitos regulatorios condicionan su utilización? |
 
 **Salida:** contexto suficiente para decidir qué examinar. Una declaración del cliente todavía debe comprobarse cuando sea objeto de evaluación.
-
-\pagebreak
 
 ## F1 Ficha del plan de examen
 
