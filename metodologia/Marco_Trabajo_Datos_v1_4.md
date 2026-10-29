@@ -45,9 +45,9 @@ Usar estas preguntas para orientar el registro de la ficha. Las respuestas se an
 
 ## F1 Ficha del plan de examen
 
-Seleccionar los exámenes según el problema de F0, comenzando por la oferta del prototipo que se presenta abajo. Una ficha de plan por evaluación reúne la selección y sus parámetros; el alcance común se toma de F0.
+Seleccionar los exámenes según el problema de F0, comenzando por las métricas propuestas para el prototipo que se presentan abajo. Una ficha de plan por evaluación reúne la selección y sus parámetros; el alcance común se toma de F0.
 
-### Oferta teórica del prototipo
+### Métricas que teóricamente entregaría el prototipo (falta validación)
 
 La tabla describe salidas que se propone implementar a partir de las APIs AWS investigadas y revisadas documentalmente el 29 de octubre de 2026. Su viabilidad se infiere de la documentación; su implementación y validación en cuenta están pendientes. Cada opción depende de los servicios, registros y permisos disponibles. La selección incluye solo las métricas pertinentes al caso.
 
@@ -76,7 +76,7 @@ Los IDs M-01 a M-15 conservan la correspondencia con el menú anterior; las sali
 - **Examen y motivo:** ID CMP, REQ que atiende y condición o pregunta que se evaluará. Indicar si comprueba una condición o explora una situación.
 - **Alcance:** fuente o proceso, unidad que se revisará, población o muestra y periodo. Explicar la selección de la muestra cuando exista.
 - **Medición y referencia:** qué se medirá y cómo; regla o valor esperado, documento o dato de contraste con ubicación y versión, y quién lo confirma. Si es descriptivo, indicar la pregunta que debe responder.
-- **Instrumento y evidencia esperada:** métrica del prototipo seleccionada y salida que se utilizará, o método de una revisión adicional. Conservar ubicación y versión del método sin repetir la tabla de oferta.
+- **Instrumento y evidencia esperada:** métrica del prototipo seleccionada y salida que se utilizará, o método de una revisión adicional. Conservar ubicación y versión del método sin repetir la tabla de métricas.
 - **Preparación:** responsable, preparada o bloqueada y motivo. Anotar lo pendiente con siguiente paso; conservar versión, fecha y respaldo del acuerdo del plan.
 
 ### Revisiones adicionales
@@ -94,10 +94,10 @@ Una ficha de resultados por evaluación, con un bloque por resultado. Incorporar
 - **Resultado y examen:** ID R, CMP y versión del plan aplicado; fecha y responsable de ejecución.
 - **Observación:** qué se obtuvo, valor y unidad, cálculo o enlace al cálculo reproducible. Conservar la referencia de F1 y señalar cambios del plan antes de recalcular.
 - **Evidencia:** ID EV, origen, ubicación recuperable, fecha de captura, periodo y método con versión y parámetros efectivos. Una misma evidencia puede servir a varios resultados.
-- **Estado y cobertura:** Cumple, No cumple, No verificable o Sin casos en el periodo; indicar cuánto del alcance pudo verificarse y con qué límites. Una revisión descriptiva conserva observaciones sin estado de cumplimiento.
+- **Estado y alcance verificado:** Cumple, No cumple, No verificable o Sin casos en el periodo; indicar qué se pudo comprobar, qué quedó sin verificar y sus motivos. Una revisión descriptiva conserva observaciones sin estado de cumplimiento.
 - **Limitaciones y pendientes:** accesos faltantes, errores, recortes, contradicciones o evidencia insuficiente; efecto, responsable y siguiente paso. Mantener visibles los exámenes bloqueados.
 
-Cuando se cuenten unidades, registrar N total, C conformes, D con desviación y NV no verificables: N = C + D + NV. La cobertura es (C + D) / N si N > 0. Con universo desconocido, informar cantidades sin porcentaje; con N = 0 acreditado, informar Sin casos. La cobertura y el estado se leen por separado.
+Usar «Sin casos en el periodo» solo cuando se haya comprobado que no hubo unidades que evaluar. Si faltan registros, accesos o evidencia suficiente para decidir, informar «No verificable» y explicar el motivo.
 
 **Salida:** resultados sustentados, con evidencia consultable y límites explícitos. Una configuración del instrumento o una extracción de registros puede ser insuficiente para verificar la condición acordada.
 
@@ -132,7 +132,7 @@ Ejemplo ficticio para mostrar la conexión entre fichas; los valores deben acord
 
 **F1 · CMP-01.** Comparar la hora de disponibilidad efectiva de las 20 entregas esperadas de un periodo acordado con las 08:00. Confirmar zona horaria y calendario. El prototipo aporta registros técnicos si su capacidad está validada; el evaluador completa la evidencia de disponibilidad cuando haga falta. Cada entrega debe cumplir el plazo.
 
-**F2 · R-01 / EV-01.** Los registros revisados acreditan 15 entregas a tiempo y 5 tardías: N = 20, C = 15, D = 5, NV = 0. Estado No cumple y cobertura 20/20. El registro EV-01 conserva origen, archivo, captura y método.
+**F2 · R-01 / EV-01.** Se verificaron las 20 entregas del periodo: 15 llegaron a tiempo y 5 tarde. Estado No cumple. El registro EV-01 conserva origen, archivo, captura y método.
 
 **F3 · DX-01 / AC-01.** El reporte incumple el plazo en 5 entregas; la causa sigue abierta. Investigar el tramo que demora la disponibilidad, con responsable por confirmar, prioridad alta antes del próximo uso crítico y plazo propuesto de una semana. Cierre de esta acción de investigación: causa sustentada y propuesta de corrección. Verificar la corrección requerirá una nueva medición.
 

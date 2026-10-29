@@ -2,14 +2,14 @@
 
 Marco de trabajo y planificación del proyecto.
 
-- **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md) · [Word](metodologia/Marco_Trabajo_Datos_v1_4.docx)
+- **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md)
 - **Planificación:** [Planificacion.xlsx](planificacion/Planificacion.xlsx)
 
 ## Actividades
 
 | Semana | Fechas | Actividad | Entregable esperado | Estado | Documento de evidencia |
 | --- | --- | --- | --- | --- | --- |
-| S01 | 27 oct–03 nov 2026 | Diseñar y documentar la metodología general de assessment de la capa de datos. | Documento marco de trabajo. | 🟡 En progreso | [Marco de trabajo 1.4](metodologia/Marco_Trabajo_Datos_v1_4.docx) |
+| S01 | 27 oct–03 nov 2026 | Diseñar y documentar la metodología general de assessment de la capa de datos. | Documento marco de trabajo. | 🟡 En progreso | [Marco de trabajo 1.4](metodologia/Marco_Trabajo_Datos_v1_4.md) |
 | S02 | 04–10 nov 2026 | Aplicar la metodología a un caso de uso representativo y definir criterios, indicadores y evidencias de evaluación. | Marco de trabajo + ejemplo de aplicación + matriz de criterios y evidencias. | ⚪ Pendiente | — |
 | S03 | 11–17 nov 2026 | Investigar y validar técnicamente los servicios AWS relevantes para evaluar la capa de datos. | Análisis de capacidades AWS y resultados de pruebas técnicas. | ⛔ Bloqueado | — |
 | S04 | 18–24 nov 2026 | Comparar soluciones existentes, identificar oportunidades de reutilización y definir el enfoque del prototipo. | Análisis comparativo y propuesta técnica del prototipo. | 🟡 En progreso | — |
