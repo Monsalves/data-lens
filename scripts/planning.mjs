@@ -1,4 +1,17 @@
 const months = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, oct: 10, nov: 11, dic: 12 };
+const repositoryRoot = 'https://github.com/Monsalves/data-lens/blob/main/';
+
+export function evidencePath(url) {
+  const resolved = new URL(url);
+  if (!resolved.href.startsWith(repositoryRoot) || resolved.search || resolved.hash) {
+    throw new Error(`La evidencia debe apuntar a un archivo de este repositorio: ${url}`);
+  }
+  const path = decodeURIComponent(resolved.pathname.slice(new URL(repositoryRoot).pathname.length));
+  if (!path || path.includes('\\') || path.includes('\0') || path.split('/').some((part) => !part || part === '.' || part === '..')) {
+    throw new Error(`Ruta de evidencia inválida: ${url}`);
+  }
+  return path;
+}
 
 function datePart(value) {
   const match = value.trim().match(/^(\d{1,2})(?:\s+([a-z]{3}))?(?:\s+(\d{4}))?$/u);
@@ -45,8 +58,12 @@ export function parsePlanning(markdown) {
     if (!statusKey) throw new Error(`Estado no reconocido: ${rawStatus}`);
     const status = { progress: 'En progreso', blocked: 'Bloqueado', pending: 'Pendiente', done: 'Terminado' }[statusKey];
     const evidence = [...rawEvidence.matchAll(/\[([^\]]+)\]\(([^)]+)\)/gu)].map(([, label, url]) => {
-      if (url !== 'metodologia/Marco_Trabajo_Datos_v1_4.md') throw new Error(`Enlace de evidencia sin ruta web definida: ${url}`);
-      return { label, url: 'metodologia/' };
+      const resolved = new URL(url, repositoryRoot);
+      if (!resolved.href.startsWith(repositoryRoot) || url.startsWith('/') || url.includes('\\')) {
+        throw new Error(`La evidencia debe apuntar a un archivo de este repositorio: ${url}`);
+      }
+      evidencePath(resolved.href);
+      return { label, url: resolved.href };
     });
     if (rawEvidence !== '—' && !evidence.length) throw new Error(`Evidencia sin enlace reconocible: ${rawEvidence}`);
     return { week, dates, ...parseDates(dates), activity, deliverable, status, statusKey, evidence };

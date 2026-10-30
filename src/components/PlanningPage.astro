@@ -1,0 +1,37 @@
+---
+import '../styles/custom.css';
+import PlanningBoard from './PlanningBoard.astro';
+import planning from '../data/planning.json';
+
+const base = import.meta.env.BASE_URL;
+const dateLabel = (value: string) => new Intl.DateTimeFormat('es-CL', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${value}T00:00:00Z`));
+const firstDate = planning.activities[0]?.start;
+const lastDate = planning.activities.at(-1)?.end;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f4f8f8" />
+    <meta name="description" content="Planificación semanal de Data Lens: actividades, estados, fechas y evidencias." />
+    <title>Planificación · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar a la planificación</a>
+    <header class="site-header">
+      <a class="brand" href={base} aria-label="Data Lens, inicio">
+        <span class="brand-mark" aria-hidden="true">DL</span>
+        <span>Data Lens</span>
+      </a>
+    </header>
+    <main id="contenido" class="page-content">
+      <div class="page-heading">
+        <h1>Planificación</h1>
+        {firstDate && lastDate ? <p class="page-summary">{dateLabel(firstDate)} — {dateLabel(lastDate)}</p> : null}
+      </div>
+      <PlanningBoard />
+    </main>
+  </body>
+</html>
