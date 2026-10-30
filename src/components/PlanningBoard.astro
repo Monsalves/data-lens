@@ -1,0 +1,66 @@
+---
+import planning from '../data/planning.json';
+const activities = planning.activities;
+const statusLabels: Record<string, string> = { progress: 'En curso', blocked: 'Bloqueada', pending: 'Pendiente', done: 'Terminada' };
+const withBase = (path: string) => `${import.meta.env.BASE_URL}${path}`;
+const searchable = (value: string) => value.replaceAll('**', '').toLocaleLowerCase('es');
+---
+<section class="planning-board" aria-labelledby="planning-board-title">
+  <div class="planning-toolbar">
+    <div><h2 id="planning-board-title">Vista de actividades</h2><p>Plan de trabajo distribuido en 14 semanas. Los estados reflejan la planificación documentada.</p></div>
+    <div class="planning-controls">
+      <div class="planning-field"><label for="activity-search">Buscar actividad o entregable</label><input id="activity-search" type="search" placeholder="Ej. metodologia, prototipo…" autocomplete="off" /></div>
+      <div class="planning-field"><label for="status-filter">Filtrar por estado</label><select id="status-filter"><option value="all">Todos los estados</option>{Object.entries(statusLabels).map(([key, label]) => <option value={key}>{label}</option>)}</select></div>
+    </div>
+  </div>
+  <div class="view-toolbar" role="group" aria-label="Vista de planificación">
+    <button type="button" class="view-button" data-view="timeline" aria-pressed="true">Cronograma</button>
+    <button type="button" class="view-button" data-view="table" aria-pressed="false">Tabla</button>
+    <output class="result-count" aria-live="polite">{activities.length} actividades</output>
+  </div>
+  <div class="timeline-wrap" id="timeline-view" tabindex="0" role="region" aria-label="Cronograma semanal de S01 a S14; desplazable horizontalmente"><ol class="timeline">
+    {activities.map((item) => <li class={`timeline-item status-${item.statusKey}`} data-status={item.statusKey} data-search={searchable(`${item.week} ${item.activity} ${item.deliverable}`)}>
+      <span class="timeline-week">{item.week}</span><span class="timeline-dates">{item.dates}</span><span class="timeline-dot" aria-hidden="true"></span><span class="timeline-activity">{item.activity}</span><span class={`status-pill status-${item.statusKey}`}>{statusLabels[item.statusKey]}</span>
+    </li>)}
+  </ol></div>
+  <p class="empty-state" hidden>No hay actividades que coincidan con los filtros.</p>
+  <div class="table-scroll" id="table-view" tabindex="0" role="region" aria-label="Tabla de actividades; desplazable horizontalmente" hidden><table class="activity-table"><caption>Detalle de actividades, entregables y evidencias</caption>
+    <thead><tr><th scope="col">Semana</th><th scope="col">Fechas</th><th scope="col">Actividad</th><th scope="col">Entregable</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead>
+    <tbody>{activities.map((item) => <tr data-status={item.statusKey} data-search={searchable(`${item.week} ${item.activity} ${item.deliverable}`)}>
+      <th scope="row">{item.week}</th><td>{item.dates}</td><td>{item.activity}</td><td>{item.deliverable.replaceAll('**', '')}</td><td><span class={`status-pill status-${item.statusKey}`}>{statusLabels[item.statusKey]}</span></td>
+      <td>{item.evidence?.length ? item.evidence.map((evidence) => <a href={withBase(evidence.url)}>{evidence.label}</a>) : <span class="muted">Sin documento asociado</span>}</td>
+    </tr>)}</tbody>
+  </table></div>
+  <p class="planning-source">Fuente: {planning.source}. Las fechas son parte del plan; no representan avance validado.</p>
+</section>
+<script>
+  const search = document.querySelector<HTMLInputElement>('#activity-search');
+  const status = document.querySelector<HTMLSelectElement>('#status-filter');
+  const items = [...document.querySelectorAll<HTMLElement>('[data-search]')];
+  const empty = document.querySelector<HTMLElement>('.empty-state');
+  const count = document.querySelector<HTMLOutputElement>('.result-count');
+  const timelineView = document.querySelector<HTMLElement>('#timeline-view');
+  const tableView = document.querySelector<HTMLElement>('#table-view');
+  const viewButtons = [...document.querySelectorAll<HTMLButtonElement>('.view-button')];
+  function normalize(value: string) { return value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es'); }
+  function filterActivities() {
+    const query = normalize(search?.value.trim() ?? '');
+    const selected = status?.value ?? 'all';
+    let visible = 0;
+    for (const item of items) {
+      const matches = (selected === 'all' || item.dataset.status === selected) && normalize(item.dataset.search ?? '').includes(query);
+      item.hidden = !matches;
+      if (matches && item.classList.contains('timeline-item')) visible++;
+    }
+    if (empty) empty.hidden = visible !== 0;
+    if (count) count.textContent = `${visible} ${visible === 1 ? 'actividad' : 'actividades'}`;
+  }
+  function setView(view: string) {
+    if (timelineView) timelineView.hidden = view !== 'timeline';
+    if (tableView) tableView.hidden = view !== 'table';
+    for (const button of viewButtons) button.setAttribute('aria-pressed', String(button.dataset.view === view));
+  }
+  for (const button of viewButtons) button.addEventListener('click', () => setView(button.dataset.view ?? 'timeline'));
+  search?.addEventListener('input', filterActivities);
+  status?.addEventListener('change', filterActivities);
+</script>

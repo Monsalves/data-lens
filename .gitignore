@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+src/data/planning.json
+src/content/docs/metodologia.md
+public/descargas/
