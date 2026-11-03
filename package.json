@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.23.4" },
+  "engines": {
+    "node": ">=22.23.4"
+  },
   "scripts": {
     "sync": "node scripts/sync-content.mjs",
     "predev": "npm run sync",
@@ -15,7 +17,8 @@
     "preview": "astro preview --host 127.0.0.1"
   },
   "dependencies": {
-    "astro": "7.4.4"
+    "astro": "7.4.4",
+    "exceljs": "^4.4.0"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",

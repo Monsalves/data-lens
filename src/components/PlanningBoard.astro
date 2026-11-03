@@ -1,6 +1,11 @@
 ---
 import planning from '../data/planning.json';
+import ExcelPreview from './ExcelPreview.astro';
 const activities = planning.activities;
+const base = import.meta.env.BASE_URL;
+const templateSuffix = '/metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx';
+const isPreviewable = (url: string) => url.endsWith(templateSuffix);
+const evidenceHref = (url: string) => isPreviewable(url) ? `${base}descargas/Plantilla_Assessment_Datos_F0_F3.xlsx` : url;
 const statusLabels: Record<string, string> = { progress: 'En curso', blocked: 'Bloqueada', pending: 'Pendiente', done: 'Terminada' };
 const searchable = (value: string) => value.replaceAll('**', '').toLocaleLowerCase('es');
 ---
@@ -19,7 +24,7 @@ const searchable = (value: string) => value.replaceAll('**', '').toLocaleLowerCa
   <div class="timeline-wrap" id="timeline-view" tabindex="0" role="region" aria-label="Cronograma semanal de S01 a S14; desplazable horizontalmente"><ol class="timeline">
     {activities.map((item) => <li class={`timeline-item status-${item.statusKey}`} data-status={item.statusKey} data-search={searchable(`${item.week} ${item.activity} ${item.deliverable} ${item.evidence?.map((evidence) => evidence.label).join(' ') ?? ''}`)}>
       <span class="timeline-week">{item.week}</span><span class="timeline-dates">{item.dates}</span><span class="timeline-dot" aria-hidden="true"></span><span class="timeline-activity">{item.activity}</span><span class={`status-pill status-${item.statusKey}`}>{statusLabels[item.statusKey]}</span>
-      {item.evidence?.length ? <span class="timeline-evidence">{item.evidence.map((evidence) => <a href={evidence.url} target="_blank" rel="noopener noreferrer" aria-label={`${evidence.label} (abre el repositorio en una pestaña nueva)`}>{evidence.label}<span aria-hidden="true"> ↗</span></a>)}</span> : null}
+      {item.evidence?.length ? <span class="timeline-evidence">{item.evidence.map((evidence) => <a href={evidenceHref(evidence.url)} target={isPreviewable(evidence.url) ? undefined : '_blank'} rel={isPreviewable(evidence.url) ? undefined : 'noopener noreferrer'} data-excel-preview={isPreviewable(evidence.url) ? '' : undefined} aria-label={isPreviewable(evidence.url) ? `${evidence.label} (previsualizar Excel en esta página)` : `${evidence.label} (abre el repositorio en una pestaña nueva)`}>{evidence.label}<span aria-hidden="true"> {isPreviewable(evidence.url) ? '▣' : '↗'}</span></a>)}</span> : null}
     </li>)}
   </ol></div>
   <p class="empty-state" hidden>No hay actividades que coincidan con los filtros.</p>
@@ -27,11 +32,12 @@ const searchable = (value: string) => value.replaceAll('**', '').toLocaleLowerCa
     <thead><tr><th scope="col">Semana</th><th scope="col">Fechas</th><th scope="col">Actividad</th><th scope="col">Entregable</th><th scope="col">Estado</th><th scope="col">Evidencia</th></tr></thead>
     <tbody>{activities.map((item) => <tr data-status={item.statusKey} data-search={searchable(`${item.week} ${item.activity} ${item.deliverable} ${item.evidence?.map((evidence) => evidence.label).join(' ') ?? ''}`)}>
       <th scope="row">{item.week}</th><td>{item.dates}</td><td>{item.activity}</td><td>{item.deliverable.replaceAll('**', '')}</td><td><span class={`status-pill status-${item.statusKey}`}>{statusLabels[item.statusKey]}</span></td>
-      <td>{item.evidence?.length ? item.evidence.map((evidence) => <a href={evidence.url} target="_blank" rel="noopener noreferrer" aria-label={`${evidence.label} (abre el repositorio en una pestaña nueva)`}>{evidence.label}<span aria-hidden="true"> ↗</span></a>) : <span class="muted">Sin documento asociado</span>}</td>
+      <td>{item.evidence?.length ? item.evidence.map((evidence) => <a href={evidenceHref(evidence.url)} target={isPreviewable(evidence.url) ? undefined : '_blank'} rel={isPreviewable(evidence.url) ? undefined : 'noopener noreferrer'} data-excel-preview={isPreviewable(evidence.url) ? '' : undefined} aria-label={isPreviewable(evidence.url) ? `${evidence.label} (previsualizar Excel en esta página)` : `${evidence.label} (abre el repositorio en una pestaña nueva)`}>{evidence.label}<span aria-hidden="true"> {isPreviewable(evidence.url) ? '▣' : '↗'}</span></a>) : <span class="muted">Sin documento asociado</span>}</td>
     </tr>)}</tbody>
   </table></div>
   <p class="planning-source">Fuente: {planning.source}. Las fechas son parte del plan; no representan avance validado.</p>
 </section>
+<ExcelPreview />
 <script>
   const search = document.querySelector<HTMLInputElement>('#activity-search');
   const status = document.querySelector<HTMLSelectElement>('#status-filter');

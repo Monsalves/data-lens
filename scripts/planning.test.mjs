@@ -27,7 +27,10 @@ test('conserva actividades, estados y evidencia del README sin fijar el avance f
   }
   assert.equal(rows.at(-1).end, '2027-02-02');
   assert.match(rows.find((row) => row.week === 'S08').deliverable, /18 dic/);
-  assert.deepEqual(rows[0].evidence, [{ label: 'Marco de trabajo 1.4', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Marco_Trabajo_Datos_v1_4.md' }]);
+  assert.deepEqual(rows[0].evidence, [
+    { label: 'Marco de trabajo 1.4', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Marco_Trabajo_Datos_v1_4.md' },
+    { label: 'Plantilla F0–F3', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx' }
+  ]);
 });
 
 test('enlaza evidencias al repositorio y rechaza rutas que salgan de él', () => {

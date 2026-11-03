@@ -2,13 +2,19 @@ import { readFile, writeFile, mkdir, copyFile, realpath, stat, rm } from 'node:f
 import { fileURLToPath } from 'node:url';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { parsePlanning, evidencePath } from './planning.mjs';
+import { readExcelPreview } from './excel-preview.mjs';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const at = (path) => resolve(root, path);
 const methodologyPath = 'metodologia/Marco_Trabajo_Datos_v1_4.md';
 const awsDocPath = 'investigacion/Servicios_AWS_S03_borrador.md';
+const templatePath = 'metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx';
 const readme = await readFile(at('README.md'), 'utf8');
 const activities = parsePlanning(readme);
+const templatePreview = await readExcelPreview(at(templatePath));
+if (templatePreview.sheets.map((sheet) => sheet.name).join('|') !== 'Guía de uso|F0|F1|F2|F3|Matriz') {
+  throw new Error('La plantilla Excel no contiene las seis hojas esperadas.');
+}
 const awsDoc = await readFile(at(awsDocPath), 'utf8');
 const awsSection = awsDoc.split('## Mapa preliminar\n')[1]?.split('\n## ')[0] ?? '';
 const awsRows = awsSection.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Pilar ') && !line.startsWith('| --- ')).map((line) => {
@@ -33,7 +39,9 @@ await rm(at('src/content/docs/metodologia.md'), { force: true });
 await Promise.all([
   writeFile(at('src/data/planning.json'), JSON.stringify({ source: 'README.md', activities }, null, 2) + '\n'),
   writeFile(at('src/data/aws-map.json'), JSON.stringify(awsRows, null, 2) + '\n'),
+  writeFile(at('src/data/template-preview.json'), JSON.stringify(templatePreview) + '\n'),
   copyFile(at(methodologyPath), at('public/descargas/Marco_Trabajo_Datos_v1_4.md')),
+  copyFile(at(templatePath), at('public/descargas/Plantilla_Assessment_Datos_F0_F3.xlsx')),
   copyFile(at('planificacion/Planificacion.xlsx'), at('public/descargas/Planificacion.xlsx'))
 ]);
 console.log(`Planificación sincronizada: ${activities.length} actividades, evidencias verificadas y descargas originales.`);
