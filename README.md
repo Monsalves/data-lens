@@ -4,6 +4,7 @@ Marco de trabajo y planificación del proyecto.
 
 - **Portal web:** [Abrir Data Lens](https://monsalves.github.io/data-lens/)
 - **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md)
+- **Plantilla por fases:** [Excel F0–F3 y matriz](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx)
 - **Planificación:** [Planificacion.xlsx](planificacion/Planificacion.xlsx)
 
 ## Actividades
