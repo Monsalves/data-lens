@@ -1,23 +1,21 @@
 # Marco de trabajo para la evaluación de datos
 
-Versión oficial 1.4 · Adoptada el 29 de octubre de 2026
+Versión oficial 1.4 · Adoptada el 29 de octubre de 2026 · Fichas alineadas con la plantilla final el 3 de noviembre de 2026
 
-La evaluación puede organizarse como una consulta médica: conocer el caso, ordenar los exámenes pertinentes, obtener sus resultados y emitir un diagnóstico. Se trabaja en un solo expediente con cuatro fichas y una matriz de vínculos. Cada dato se registra en su ficha de origen y se reutiliza en las fases siguientes.
+Este marco orienta una consultoría sobre la capa de datos de una organización que ya usa AWS. Se trabaja en un expediente con cuatro fichas y una matriz de trazabilidad. Las tablas siguientes son los registros que se completan en cada fase; el evaluador elige las comprobaciones y los criterios pertinentes para el problema de negocio. La [plantilla final en Google Sheets](https://docs.google.com/spreadsheets/d/1ffSsgFYO0LRBM4LXcJqXWCAGqYs_ry3qIkN11gYdRtg/edit) es la referencia de sus nombres y columnas.
 
-## Recorrido de la evaluación
-
-| Fase | Analogía | Ficha que se completa |
+| Fase | Pregunta que resuelve | IDs que se crean |
 | --- | --- | --- |
-| F0 | Historia del paciente | Cuenta y problema |
-| F1 | Orden de exámenes | Plan de examen |
-| F2 | Exámenes y resultados | Resultados y evidencia |
-| F3 | Diagnóstico y tratamiento | Diagnóstico y acciones |
+| F0 · Cuenta y problema | ¿Qué problema, fuentes y condiciones debemos evaluar? | F, REQ |
+| F1 · Plan de examen | ¿Qué se revisará, con qué criterio y cómo? | EXA |
+| F2 · Resultados y evidencia | ¿Qué respaldo se obtuvo y qué indica frente al criterio? | EV, RES |
+| F3 · Diagnóstico y acciones | ¿Qué puede concluirse y qué se hará? | DX, AC si corresponde |
 
-El prototipo es uno de los instrumentos de F2: obtiene evidencia y produce mediciones dentro de su capacidad validada. El evaluador elige los exámenes en F1 e interpreta sus resultados en F3. SQL, documentos o entrevistas pueden completar la evaluación.
+## F0 Cuenta y problema
 
-## F0 Ficha de la cuenta y del problema
+Completar una ficha por evaluación. Registrar el contexto declarado por el cliente, distinguir lo confirmado de lo pendiente e identificar cada fuente una sola vez. Los requisitos expresan condiciones o preguntas que importan para la decisión de negocio.
 
-Completar una vez por evaluación. La cuenta incluye el contexto del cliente y sus datos; precisar las cuentas AWS cuando formen parte del alcance.
+**Información a registrar**
 
 | Campo | Información a registrar |
 | --- | --- |
@@ -27,9 +25,9 @@ Completar una vez por evaluación. La cuenta incluye el contexto del cliente y s
 | Condiciones de uso | Resultado esperado, plazos, restricciones y condiciones esenciales. Indicar quién declaró o confirmó la información. |
 | Límites y dudas | Qué se incluye, qué se excluye y qué falta conocer, con responsable y siguiente paso. |
 
-### Preguntas sugeridas
+**Preguntas sugeridas**
 
-Usar estas preguntas para orientar el registro de la ficha. Las respuestas se anotan en los campos correspondientes, sin duplicarlas en un registro separado.
+Estas preguntas ayudan a obtener la información anterior. No son una segunda ficha ni exigen respuestas duplicadas: registrar cada respuesta en el campo que corresponda.
 
 | ID | Pregunta |
 | --- | --- |
@@ -41,101 +39,72 @@ Usar estas preguntas para orientar el registro de la ficha. Las respuestas se an
 | P-06 | ¿Quién responde por cada fuente de datos y quién gestiona la autorización de su uso? |
 | P-07 | ¿Qué información sensible contienen las fuentes y qué requisitos regulatorios condicionan su utilización? |
 
-**Salida:** contexto suficiente para decidir qué examinar. Una declaración del cliente todavía debe comprobarse cuando sea objeto de evaluación.
+**Fuentes y activos**
 
-## F1 Ficha del plan de examen
+| ID fuente | Fuente o activo | Ubicación | Formato | Actualización | Responsable y sensibilidad |
+| --- | --- | --- | --- | --- | --- |
+| F-__ |  |  |  |  |  |
 
-Seleccionar los exámenes según el problema de F0, comenzando por las métricas propuestas para el prototipo que se presentan abajo. Una ficha de plan por evaluación reúne la selección y sus parámetros; el alcance común se toma de F0.
+**Requisitos**
 
-### Métricas que teóricamente entregaría el prototipo (falta validación)
+| ID REQ | Fuente vinculada | Condición o pregunta | Propósito |
+| --- | --- | --- | --- |
+| REQ-__ | F-__ |  |  |
 
-La tabla describe salidas que se propone implementar a partir de las APIs AWS investigadas y revisadas documentalmente el 29 de octubre de 2026. Su viabilidad se infiere de la documentación; su implementación y validación en cuenta están pendientes. Cada opción depende de los servicios, registros y permisos disponibles. La selección incluye solo las métricas pertinentes al caso.
+Un requisito puede considerar varias fuentes y una fuente puede servir a varios requisitos. Al reutilizar un ID, conservar claro a qué fuente se refiere cada vínculo. Una declaración del cliente no constituye por sí sola una comprobación.
 
-| Pilar | Dimensión | Métrica y salida que podría entregar el prototipo |
-| --- | --- | --- |
-| Calidad | Reglas de calidad | **M-01 Nulos.** Cantidad y porcentaje de nulos por campo seleccionado, total evaluado y regla aplicada. Requiere consulta sobre datos accesibles o resultados de calidad con conteos suficientes; un porcentaje redondeado no permite deducir un conteo exacto. |
-| Calidad | Reglas de calidad | **M-02 Antigüedad.** Diferencia entre fecha de contenido y fecha de evaluación; registros fuera del límite acordado. Requiere campo temporal, corte y zona horaria definidos. La fecha de modificación de una tabla no representa necesariamente la antigüedad de sus datos. |
-| Calidad | Pipelines | **M-03 Ejecuciones y plazos.** Ejecuciones Glue por estado, inicio, fin y duración. Con calendario de entregas y evidencia de disponibilidad, podría contar entregas a tiempo, tardías y vencidas sin entrega. Un job exitoso por sí solo no acredita una entrega correcta. |
-| Calidad | Curación | **M-04 Preparación y controles de salida.** Por lote identificable, pasos ejecutados y resultados de controles de calidad aprobados o fallidos, por separado. Requiere vincular lote, ejecución y evaluación; contar jobs no demuestra limpieza efectiva. |
-| Responsabilidad | Responsables | **M-05 Atribución registrada.** Activos con y sin campo de propietario informado en Glue o formulario de DataZone; proyecto propietario registrado. La confirmación del responsable de negocio se registra cuando la aporta el referente. |
-| Responsabilidad | Políticas de uso | **M-06 Concesiones registradas.** Solicitudes y concesiones de suscripción de DataZone por activo, destinatario y estado. Permite mostrar el respaldo técnico existente; no determina por sí solo que el uso tenga autorización contractual o consentimiento. |
-| Visibilidad | Catálogo | **M-07 Metadatos.** Tablas o activos registrados, campos requeridos presentes y faltantes, y cantidades por campo. Con inventario de F0, fuentes sin correspondencia en el catálogo. Presencia de una descripción no acredita su exactitud. |
-| Visibilidad | Linaje | **M-08 Recorridos registrados.** Nodos, conexiones de origen y destino y fechas disponibles en DataZone. Con recorridos esperados definidos, tramos respaldados y sin evidencia. Requiere captura previa; el inventario no reconstruye las transformaciones ausentes. |
-| Acceso y seguridad | Acceso mínimo | **M-09 Permisos observados.** Concesiones de Lake Formation por principal, recurso y permiso. Con matriz autorizada, diferencias dentro del alcance consultado. Esta salida no representa todos los permisos efectivos de la cuenta AWS. |
-| Acceso y seguridad | Protección | **M-10 Cifrado en S3.** Método y clave predeterminados por bucket; método por objeto o versión cuando se obtiene esa evidencia. Puede comparar con el requisito acordado. La configuración del bucket no prueba el cifrado de todo el histórico. |
-| Acceso y seguridad | Protección | **M-11 Transporte seguro en S3.** Resultado de la regla de AWS Config que revisa la exigencia de SSL/TLS por bucket, con recurso y fecha de evaluación, si está disponible. No mide todas las conexiones de la plataforma. |
-| Acceso y seguridad | Auditoría | **M-12 Eventos recuperables.** Eventos CloudTrail por identidad, acción, recurso y fecha; cantidades y campos faltantes. LookupEvents cubre administración e Insights de la región durante 90 días. Los eventos de datos requieren registros previamente habilitados y accesibles. |
-| Cumplimiento y privacidad | Sensibles | **M-13 Detecciones en S3.** Hallazgos Macie por objeto y categoría, con resultados de inspección y errores disponibles. Puede contar objetos inspeccionados con detecciones; la cobertura depende del análisis existente y la ausencia de hallazgos no acredita ausencia de datos sensibles. |
-| Cumplimiento y privacidad | Privacidad E/S | **M-14 Pruebas de contenido.** Para casos de entrada o salida definidos, acción y detecciones devueltas por ApplyGuardrail de Bedrock, indicando versión del guardrail. Requiere ejecutar pruebas; no acredita su integración en la aplicación ni la privacidad de todos los intercambios. |
-| Cumplimiento y privacidad | Retención | **M-15 Conservación configurada en S3.** Reglas Lifecycle, filtros y plazos; modo y fecha de retención Object Lock por objeto o versión cuando aplique. Con política acordada, diferencias de configuración. No demuestra eliminación efectiva de versiones, réplicas o respaldos. |
+## F1 Plan de examen
 
-Los IDs M-01 a M-15 conservan la correspondencia con el menú anterior; las salidas aquí descritas delimitan el aporte técnico propuesto. Las referencias del negocio son parámetros de la evaluación. Glue Data Quality y las consultas Athena formarían parte del prototipo si se implementan sus ejecuciones o lecturas; un SQL ejecutado por el evaluador fuera de esa integración se registra como revisión adicional. El resultado distingue evidencia no disponible, acceso denegado y periodo sin casos.
+Crear un examen para cada comprobación necesaria. Debe responder a un REQ de F0 y señalar la fuente F que se revisará. El criterio se acuerda antes de interpretar el resultado; si el examen es descriptivo, indicar «sin umbral». Especificar en «Cómo se revisará» el método y el alcance necesario, como corte o población, cuando afecten la interpretación.
 
-### Registro breve de los exámenes seleccionados
+| ID Examen | REQ relacionado | Fuente datos relacionada | Comprobación | Criterio | Cómo se revisará |
+| --- | --- | --- | --- | --- | --- |
+| EXA-__ | REQ-__ | F-__ |  |  |  |
 
-- **Examen y motivo:** ID CMP, REQ que atiende y condición o pregunta que se evaluará. Indicar si comprueba una condición o explora una situación.
-- **Alcance:** fuente o proceso, unidad que se revisará, población o muestra y periodo. Explicar la selección de la muestra cuando exista.
-- **Medición y referencia:** qué se medirá y cómo; regla o valor esperado, documento o dato de contraste con ubicación y versión, y quién lo confirma. Si es descriptivo, indicar la pregunta que debe responder.
-- **Instrumento y evidencia esperada:** métrica del prototipo seleccionada y salida que se utilizará, o método de una revisión adicional. Conservar ubicación y versión del método sin repetir la tabla de métricas.
-- **Preparación:** responsable, preparada o bloqueada y motivo. Anotar lo pendiente con siguiente paso; conservar versión, fecha y respaldo del acuerdo del plan.
+El ID EXA debe identificar sin ambigüedad el examen. Si se aplica la misma comprobación a otra fuente con un resultado independiente, darle otro ID o documentar explícitamente la relación entre fuente, ejecución y resultado. El instrumento puede ser un prototipo, una consulta, una revisión documental o una entrevista; no se presupone que esté implementado o validado en la cuenta.
 
-### Revisiones adicionales
+## F2 Resultados y evidencia
 
-Si el caso requiere otra medición, definirla mediante el mismo bloque breve y asignarle un CMP propio, indicando «adicional». Registrar qué pregunta responde, qué medirá, método y responsable, alcance y periodo, referencia si corresponde y evidencia esperada. Sus resultados se incorporan en F2 y se enlazan en la misma matriz. No es obligatorio inventar un complemento para cada métrica del prototipo.
+Tras realizar el examen, registrar primero la evidencia EV y después el resultado RES que la interpreta. La salida de EV debe permitir recuperar el respaldo concreto, por ejemplo mediante un enlace, ruta o identificador de ejecución, además de indicar qué contiene. Un resultado puede apoyarse en varias evidencias: repetir su ID en la tabla EV sin duplicar el resultado.
 
-**Salida:** métricas del prototipo elegidas y revisiones adicionales justificadas, con parámetros y preparación. Conservar también bloqueos, diferimientos y exclusiones relevantes. No es necesario seleccionar las quince opciones.
+**Evidencias**
 
-\pagebreak
-
-## F2 Ficha de resultados y evidencia
-
-Una ficha de resultados por evaluación, con un bloque por resultado. Incorporar las salidas del instrumento y agregar la interpretación necesaria para leerlas.
-
-- **Resultado y examen:** ID R, CMP y versión del plan aplicado; fecha y responsable de ejecución.
-- **Observación:** qué se obtuvo, valor y unidad, cálculo o enlace al cálculo reproducible. Conservar la referencia de F1 y señalar cambios del plan antes de recalcular.
-- **Evidencia:** ID EV, origen, ubicación recuperable, fecha de captura, periodo y método con versión y parámetros efectivos. Una misma evidencia puede servir a varios resultados.
-- **Estado y alcance verificado:** Cumple, No cumple, No verificable o Sin casos en el periodo; indicar qué se pudo comprobar, qué quedó sin verificar y sus motivos. Una revisión descriptiva conserva observaciones sin estado de cumplimiento.
-- **Limitaciones y pendientes:** accesos faltantes, errores, recortes, contradicciones o evidencia insuficiente; efecto, responsable y siguiente paso. Mantener visibles los exámenes bloqueados.
-
-Usar «Sin casos en el periodo» solo cuando se haya comprobado que no hubo unidades que evaluar. Si faltan registros, accesos o evidencia suficiente para decidir, informar «No verificable» y explicar el motivo.
-
-**Salida:** resultados sustentados, con evidencia consultable y límites explícitos. Una configuración del instrumento o una extracción de registros puede ser insuficiente para verificar la condición acordada.
-
-\pagebreak
-
-## F3 Ficha de diagnóstico y acciones
-
-Completar una vez por evaluación, apoyándose en los resultados de F2.
-
-- **Respuesta al problema:** qué puede concluirse para la decisión de F0 y qué condiciones siguen sin resolverse.
-- **Diagnósticos:** ID DX, resultados R que lo sostienen, situación observada e impacto. Distinguir brecha demostrada, hipótesis y falta de información; incluir evidencia contraria o limitante.
-- **Acciones:** ID AC, DX o bloqueo que atiende, qué hacer, responsable confirmado o propuesto, prioridad justificada, plazo y evidencia que permitirá cerrarla. Si procede mantener una condición, registrar esa decisión.
-- **Alcance de la conclusión:** fuentes y periodo cubiertos, límites y condiciones futuras. Resumir por los cinco pilares reutilizando los resultados e indicando las exclusiones.
-
-**Salida:** diagnóstico comprensible y próximos pasos. Los resultados del examen sustentan el diagnóstico; atribuir una causa requiere evidencia adicional cuando el examen no la demuestra.
-
-## Matriz transversal de vínculos
-
-La matriz funciona como índice del expediente. Se inicia con los REQ de F0 y se completa durante las cuatro fases. Contiene IDs o enlaces a los registros; las descripciones, reglas, mediciones y responsables permanecen en sus fichas de origen.
-
-| F0 Requerimiento | F1 Examen | F2 Resultado y evidencia | F3 Diagnóstico | F3 Acción o decisión |
+| ID EV | Resultado relacionado | Instrumento revisión | Salida | Fecha en que se revisó |
 | --- | --- | --- | --- | --- |
-| REQ-01 | CMP-01 | R-01 / EV-01 | DX-01 | AC-01 |
+| EV-__ | RES-__ |  |  |  |
 
-Una fila representa una relación. Un requerimiento puede tener varios exámenes y un resultado puede sostener varios diagnósticos: repetir el vínculo usando los mismos IDs. Contar objetos únicos. Las fases futuras quedan vacías; al corte, explicar los vínculos pendientes, excluidos o diferidos en su registro de origen.
+**Resultados**
 
-## Ejemplo del recorrido completo
+| ID RES | EXA relacionado | Observación y valor | Regla aplicada | Estado |
+| --- | --- | --- | --- | --- |
+| RES-__ | EXA-__ |  |  |  |
 
-Ejemplo ficticio para mostrar la conexión entre fichas; los valores deben acordarse para cada caso.
+La regla aplicada debe coincidir con el criterio de F1. «Cumple» o «No cumple» exige evidencia suficiente para la fuente y el alcance examinados. Si falta acceso, una referencia necesaria o respaldo suficiente, registrar «Sin evidencia suficiente» o «No verificable» y explicar el motivo en el registro o respaldo. «Sin casos» solo procede cuando se comprobó que la población del periodo fue cero. Un resultado descriptivo no necesita estado de cumplimiento.
 
-**F0 · REQ-01.** El reporte llega tarde. El negocio confirma que debe estar disponible a las 08:00 en cada día hábil.
+## F3 Diagnóstico y acciones
 
-**F1 · CMP-01.** Comparar la hora de disponibilidad efectiva de las 20 entregas esperadas de un periodo acordado con las 08:00. Confirmar zona horaria y calendario. El prototipo aporta registros técnicos si su capacidad está validada; el evaluador completa la evidencia de disponibilidad cuando haga falta. Cada entrega debe cumplir el plazo.
+Usar los resultados RES para redactar los diagnósticos DX. Primero completar la conclusión y su impacto o limitación; después registrar las acciones AC que correspondan. Un resultado favorable no obliga a crear una acción. Las causas no observadas se presentan como hipótesis, no como hechos demostrados.
 
-**F2 · R-01 / EV-01.** Se verificaron las 20 entregas del periodo: 15 llegaron a tiempo y 5 tarde. Estado No cumple. El registro EV-01 conserva origen, archivo, captura y método.
+**Diagnósticos**
 
-**F3 · DX-01 / AC-01.** El reporte incumple el plazo en 5 entregas; la causa sigue abierta. Investigar el tramo que demora la disponibilidad, con responsable por confirmar, prioridad alta antes del próximo uso crítico y plazo propuesto de una semana. Cierre de esta acción de investigación: causa sustentada y propuesta de corrección. Verificar la corrección requerirá una nueva medición.
+| ID DX | Resultados relacionados | Conclusión | Impacto / limitación |
+| --- | --- | --- | --- |
+| DX-__ | RES-__ |  |  |
 
-## Regla de aplicación
+**Acciones**
 
-Un expediente, cuatro fichas y una matriz. Los pendientes se anotan donde afectan el trabajo; un listado separado se agrega solo si facilita coordinar el caso. Las consultas, fórmulas extensas y archivos del instrumento se adjuntan o enlazan. Los IDs nuevos pueden limitarse a REQ, CMP, R, EV, DX y AC; conservar los IDs existentes al reutilizar evaluaciones anteriores. Esta versión sustituye a la 1.3 como marco oficial del proyecto. Su aplicación práctica y las capacidades del prototipo siguen pendientes de validación.
+| ID AC | Diagnóstico relacionado | Acción propuesta | Prioridad | Criterio de cierre | Estado |
+| --- | --- | --- | --- | --- | --- |
+| AC-__ | DX-__ |  |  |  |  |
+
+La conclusión debe responder al problema de F0 dentro del alcance efectivamente revisado. En «Impacto / limitación» se distingue el efecto observado de lo que todavía no puede afirmarse. Una acción se cierra cuando existe el respaldo definido en su criterio de cierre; una propuesta no se presenta como ejecutada.
+
+## Matriz de trazabilidad
+
+La matriz muestra el recorrido de los IDs, no crea evidencia ni decide cumplimiento. Se llena con los registros existentes en F0 a F3. Una fila representa un camino sustentado; repetir IDs cuando haya varias evidencias, resultados, diagnósticos o acciones. Dejar la acción vacía cuando no corresponda.
+
+| F0 Fuente | F0 Requisito | F1 Examen | F2 Resultado | F2 Evidencia | F3 Diagnóstico | F3 Acción |
+| --- | --- | --- | --- | --- | --- | --- |
+| F-__ | REQ-__ | EXA-__ | RES-__ | EV-__ | DX-__ | AC-__ o vacío |
+
+Antes de concluir, comprobar que cada ID existe en su ficha, que la fuente de F1 corresponde al vínculo de F0, que EV respalda RES y que la regla de F2 es la acordada en F1. Los vínculos pendientes o excluidos deben poder explicarse. El expediente conserva las consultas, documentos y demás respaldos en ubicaciones recuperables.
