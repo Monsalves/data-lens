@@ -1,0 +1,88 @@
+---
+import { readFile } from 'node:fs/promises';
+import '../../styles/custom.css';
+
+const base = import.meta.env.BASE_URL;
+const source = await readFile(new URL('../../../investigacion/Servicios_AWS_S03_borrador.md', import.meta.url), 'utf8');
+const section = source.split('## Mapa preliminar\n')[1]?.split('\n## ')[0] ?? '';
+const rows = section.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Pilar ') && !line.startsWith('| --- ')).map((line) => {
+  const [pillar, dimension, services, observation, status] = line.slice(1, -1).split('|').map((cell) => cell.trim());
+  return { pillar, dimension, services, observation, status };
+});
+if (rows.length !== 13) throw new Error(`Se esperaban 13 dimensiones en el mapa AWS; hay ${rows.length}`);
+const pillars = [...new Set(rows.map((row) => row.pillar))];
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Mapa preliminar de pilares, dimensiones y servicios AWS para el assessment de datos Data Lens." />
+    <title>Servicios AWS · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <style>
+      .aws-wrap{max-width:1160px;margin:0 auto;padding:2rem 1.25rem 4rem}
+      .aws-intro{max-width:75ch;line-height:1.6;color:#395258}
+      .aws-note{border-left:4px solid #1f8b89;background:#eaf5f2;padding:.8rem 1rem;margin:1.25rem 0 1.75rem;line-height:1.5}
+      .aws-controls{display:flex;gap:1rem;flex-wrap:wrap;align-items:end;margin-bottom:1rem}
+      .aws-controls label{display:grid;gap:.35rem;font-weight:600}
+      .aws-controls input,.aws-controls select{min-width:230px;max-width:100%;padding:.65rem;border:1px solid #9eb6b8;border-radius:8px;background:#fff;font:inherit}
+      .aws-table-wrap{overflow:auto;border:1px solid #cfdddd;border-radius:10px;background:#fff}
+      .aws-table{border-collapse:collapse;width:100%;min-width:850px}
+      .aws-table th,.aws-table td{padding:.85rem;vertical-align:top;border-bottom:1px solid #dce7e7;text-align:left;line-height:1.45}
+      .aws-table thead{background:#e8f2f1}
+      .aws-table tbody tr:last-child td{border-bottom:0}
+      .aws-table tbody tr:hover{background:#f4f9f8}
+      .aws-links{display:flex;gap:1.2rem;flex-wrap:wrap;margin-top:1.5rem}
+      .aws-links a{font-weight:600}
+    </style>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="site-header"><a class="brand" href={base} aria-label="Data Lens, inicio"><span class="brand-mark" aria-hidden="true">DL</span><span>Data Lens</span></a></header>
+    <main id="contenido" class="aws-wrap">
+      <h1>Servicios AWS por pilar y dimensión</h1>
+      <p class="aws-intro">Borrador de la semana 3 para una evaluación de la capa de datos de una empresa FSI que ya trabaja en AWS. El mapa ayuda a elegir qué servicios revisar según las fuentes y preguntas del assessment.</p>
+      <p class="aws-note"><strong>Investigación documental inicial.</strong> Los servicios son candidatos y todavía no hay pruebas ejecutadas en una cuenta AWS. Las métricas de la hoja de referencia siguen en discusión.</p>
+      <div class="aws-controls">
+        <label for="pillar-filter">Pilar<select id="pillar-filter"><option value="">Todos</option>{pillars.map((pillar) => <option value={pillar}>{pillar}</option>)}</select></label>
+        <label for="aws-search">Buscar dimensión o servicio<input id="aws-search" type="search" placeholder="Ej. linaje, Glue…" /></label>
+        <output id="aws-count" aria-live="polite">{rows.length} dimensiones</output>
+      </div>
+      <div class="aws-table-wrap" role="region" tabindex="0" aria-label="Mapa de servicios AWS, desplazable horizontalmente">
+        <table class="aws-table">
+          <thead><tr><th scope="col">Pilar</th><th scope="col">Dimensión</th><th scope="col">Servicio AWS candidato</th><th scope="col">Qué se observaría</th><th scope="col">Pendiente</th></tr></thead>
+          <tbody>{rows.map((row) => <tr data-pillar={row.pillar} data-search={`${row.pillar} ${row.dimension} ${row.services} ${row.observation} ${row.status}`}><td>{row.pillar}</td><td>{row.dimension}</td><td>{row.services}</td><td>{row.observation}</td><td>{row.status}</td></tr>)}</tbody>
+        </table>
+      </div>
+      <div class="aws-links">
+        <a href="https://github.com/Monsalves/data-lens/blob/main/investigacion/Servicios_AWS_S03_borrador.md" target="_blank" rel="noopener noreferrer">Leer documento y solicitud de acceso ↗</a>
+        <a href="https://docs.google.com/spreadsheets/d/1KHVM0JyYWwN8I-pdt1Aa-h3G_PBd3sFY3L-KBs37uGA/edit?gid=1654958782#gid=1654958782" target="_blank" rel="noopener noreferrer">Ver hoja de métricas de referencia ↗</a>
+      </div>
+      <details style="margin-top:2rem">
+        <summary style="cursor:pointer;font-weight:600">Previsualizar la hoja de métricas de referencia</summary>
+        <p>La hoja se muestra desde Google Sheets y puede requerir iniciar sesión según sus permisos de uso compartido.</p>
+        <iframe title="Hoja de métricas de referencia" src="https://docs.google.com/spreadsheets/d/1KHVM0JyYWwN8I-pdt1Aa-h3G_PBd3sFY3L-KBs37uGA/preview?gid=1654958782" loading="lazy" style="width:100%;height:620px;border:1px solid #cfdddd;border-radius:10px"></iframe>
+      </details>
+    </main>
+    <script>
+      const pillar = document.querySelector<HTMLSelectElement>('#pillar-filter');
+      const search = document.querySelector<HTMLInputElement>('#aws-search');
+      const count = document.querySelector<HTMLOutputElement>('#aws-count');
+      const rows = [...document.querySelectorAll<HTMLTableRowElement>('.aws-table tbody tr')];
+      const norm = (value: string) => value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLocaleLowerCase('es');
+      function filter() {
+        const term = norm(search?.value.trim() ?? '');
+        const selected = pillar?.value ?? '';
+        let visible = 0;
+        for (const row of rows) {
+          row.hidden = (selected !== '' && row.dataset.pillar !== selected) || !norm(row.dataset.search ?? '').includes(term);
+          if (!row.hidden) visible++;
+        }
+        if (count) count.textContent = `${visible} ${visible === 1 ? 'dimensión' : 'dimensiones'}`;
+      }
+      pillar?.addEventListener('change', filter);
+      search?.addEventListener('input', filter);
+    </script>
+  </body>
+</html>

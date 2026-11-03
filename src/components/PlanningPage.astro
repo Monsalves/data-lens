@@ -30,6 +30,7 @@ const lastDate = planning.activities.at(-1)?.end;
       <div class="page-heading">
         <h1>Planificación</h1>
         {firstDate && lastDate ? <p class="page-summary">{dateLabel(firstDate)} — {dateLabel(lastDate)}</p> : null}
+        <p><a href={`${base}investigacion-aws/`}>Ver mapa preliminar de servicios AWS para la semana 3 →</a></p>
       </div>
       <PlanningBoard />
     </main>
