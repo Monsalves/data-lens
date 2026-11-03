@@ -12,9 +12,10 @@ const activities = parsePlanning(readme);
 const awsDoc = await readFile(at(awsDocPath), 'utf8');
 const awsSection = awsDoc.split('## Mapa preliminar\n')[1]?.split('\n## ')[0] ?? '';
 const awsRows = awsSection.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Pilar ') && !line.startsWith('| --- ')).map((line) => {
-  const [pillar, dimension, services, observation, status] = line.slice(1, -1).split('|').map((cell) => cell.trim());
-  if (![pillar, dimension, services, observation, status].every(Boolean)) throw new Error(`Fila incompleta del mapa AWS: ${line}`);
-  return { pillar, dimension, services, observation, status };
+  const cells = line.slice(1, -1).split('|').map((cell) => cell.trim());
+  if (cells.length !== 3 || !cells.every(Boolean)) throw new Error(`Fila incompleta del mapa AWS: ${line}`);
+  const [pillar, dimension, services] = cells;
+  return { pillar, dimension, services };
 });
 if (awsRows.length !== 13) throw new Error(`Se esperaban 13 dimensiones AWS; hay ${awsRows.length}`);
 for (const activity of activities) {
