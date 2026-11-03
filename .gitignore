@@ -5,5 +5,6 @@ dist/
 .env.*
 !.env.example
 src/data/planning.json
+src/data/aws-map.json
 src/content/docs/metodologia.md
 public/descargas/

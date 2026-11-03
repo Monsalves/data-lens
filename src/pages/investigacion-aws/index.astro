@@ -1,15 +1,8 @@
 ---
-import { readFile } from 'node:fs/promises';
 import '../../styles/custom.css';
+import rows from '../../data/aws-map.json';
 
 const base = import.meta.env.BASE_URL;
-const source = await readFile(new URL('../../../investigacion/Servicios_AWS_S03_borrador.md', import.meta.url), 'utf8');
-const section = source.split('## Mapa preliminar\n')[1]?.split('\n## ')[0] ?? '';
-const rows = section.split('\n').filter((line) => line.startsWith('| ') && !line.startsWith('| Pilar ') && !line.startsWith('| --- ')).map((line) => {
-  const [pillar, dimension, services, observation, status] = line.slice(1, -1).split('|').map((cell) => cell.trim());
-  return { pillar, dimension, services, observation, status };
-});
-if (rows.length !== 13) throw new Error(`Se esperaban 13 dimensiones en el mapa AWS; hay ${rows.length}`);
 const pillars = [...new Set(rows.map((row) => row.pillar))];
 ---
 <!doctype html>
