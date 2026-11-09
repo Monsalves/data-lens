@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Piloto de 13 métricas: pilares, dimensiones y métricas</title>
+<style id="standalone-only">
+  /* Solo para abrir este archivo suelto; el portal Data Lens aporta su propio marco */
+  body { margin: 0; padding: 32px 24px 48px; background: #f3f6f7; color: #17313d;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  .mp { max-width: 1180px; margin: 0 auto; }
+  .mp-intro h1 { margin: 0 0 6px; font-size: 1.7rem; letter-spacing: -.03em; }
+</style>
+<style id="mp-styles">
+.mp {
+  --ink: #17313d;
+  --muted: #617982;
+  --line: #cfdddd;
+  --surface: #ffffff;
+  --dim-h: 68px;
+  --pad: 8px;
+  --cy: calc(var(--pad) + var(--dim-h) / 2);
+  --ease: cubic-bezier(.22, .8, .25, 1);
+  color: var(--ink);
+}
+.mp *, .mp *::before, .mp *::after { box-sizing: border-box; }
+.mp .scroller { overflow-x: auto; padding-bottom: 4px; }
+.mp .inner { min-width: 940px; }
+.mp .sub { margin: 0 0 22px; color: var(--muted); font-size: .92rem; line-height: 1.55; max-width: 780px; }
+.mp .sub b { color: var(--ink); }
+
+/* Un color por pilar, en la misma gama que el portal */
+.mp .g1 { --c: #106b71; --soft: #d9efea; }
+.mp .g2 { --c: #3f5fa8; --soft: #e4eaf7; }
+.mp .g3 { --c: #5a8f2e; --soft: #e6f0d9; }
+.mp .g4 { --c: #b5701f; --soft: #f7e8d2; }
+.mp .g5 { --c: #a8456b; --soft: #f6e1ea; }
+
+.mp .heads { display: grid; grid-template-columns: 230px 56px 210px 56px 1fr; margin-bottom: 4px; }
+.mp .head { font-size: .72rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); padding-left: 4px; }
+
+.mp .group { position: relative; padding-left: 230px; margin-bottom: 16px; }
+.mp .rows { position: relative; }
+
+.mp .pillar {
+  position: absolute; left: 0; top: 50%; width: 230px;
+  transform: translateY(-50%);
+  padding: 14px 16px;
+  background: var(--c); color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 6px 16px -8px var(--c);
+  animation: mp-pop .6s var(--ease) both;
+  animation-delay: calc(var(--gi) * 120ms);
+  transition: box-shadow .3s;
+}
+.mp .pillar b { display: block; font-size: 1rem; line-height: 1.25; }
+.mp .pillar span { display: block; margin-top: 5px; font-size: .8rem; line-height: 1.35; opacity: .93; }
+.mp .pillar::after {
+  content: ""; position: absolute; left: 100%; top: 50%; width: 28px;
+  border-top: 2px solid var(--c);
+  transform-origin: left; animation: mp-draw .5s .4s var(--ease) both;
+}
+.mp .group:hover .pillar { box-shadow: 0 10px 22px -8px var(--c); }
+
+.mp .row {
+  display: grid;
+  grid-template-columns: 56px 210px 56px 1fr;
+  padding: var(--pad) 0;
+  align-items: start;
+  animation: mp-slide .55s var(--ease) both;
+  animation-delay: calc(var(--gi) * 120ms + var(--ri) * 90ms + 150ms);
+}
+
+.mp .branch { position: relative; align-self: stretch; margin: calc(var(--pad) * -1) 0; }
+.mp .branch::before { content: ""; position: absolute; left: 50%; top: 0; bottom: 0; border-left: 2px solid var(--c); }
+.mp .row.first .branch::before { top: var(--cy); }
+.mp .row.last  .branch::before { bottom: calc(100% - var(--cy)); }
+.mp .row.first.last .branch::before { display: none; }
+.mp .branch::after { content: ""; position: absolute; left: 50%; right: 0; top: var(--cy); border-top: 2px solid var(--c); }
+
+.mp .dim {
+  height: var(--dim-h);
+  padding: 8px 14px;
+  display: flex; align-items: center;
+  background: var(--soft);
+  border: 2px solid var(--c);
+  border-radius: 12px;
+  font-weight: 700; font-size: .9rem;
+  transition: transform .25s var(--ease), box-shadow .25s;
+}
+.mp .row:hover .dim { transform: translateX(3px); box-shadow: 0 6px 14px -8px var(--c); }
+
+.mp .link { position: relative; height: var(--dim-h); }
+.mp .link::before {
+  content: ""; position: absolute; left: 0; right: 7px; top: 50%;
+  border-top: 2px solid var(--c);
+  transform-origin: left; animation: mp-draw .5s .5s var(--ease) both;
+}
+.mp .link::after {
+  content: ""; position: absolute; right: 0; top: 50%;
+  transform: translateY(-50%);
+  border: 6px solid transparent; border-left: 9px solid var(--c); border-right: 0;
+}
+.mp .row:hover .link::before { animation: none; }
+
+.mp .metric {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--c);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow .3s, transform .25s var(--ease), border-color .3s;
+}
+.mp .metric:hover { transform: translateY(-2px); box-shadow: 0 10px 22px -12px rgba(23, 49, 61, .45); }
+.mp .metric.open { border-color: var(--c); box-shadow: 0 12px 28px -14px var(--c); }
+
+.mp .m-head {
+  all: unset; box-sizing: border-box; cursor: pointer;
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; min-height: calc(var(--dim-h) - 2px); padding: 8px 14px;
+}
+.mp .m-head:focus-visible { outline: 3px solid var(--c); outline-offset: -3px; border-radius: 8px; }
+.mp .m-title { display: flex; flex-direction: column; }
+.mp .id { font-size: .72rem; font-weight: 800; color: var(--c); letter-spacing: .06em; }
+.mp .name { font-size: .92rem; font-weight: 700; line-height: 1.3; }
+.mp .svc { margin-top: 2px; font-size: .75rem; color: var(--muted); }
+.mp .cta { flex: none; display: flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 700; color: var(--c); }
+.mp .cta i {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--soft);
+  display: grid; place-items: center;
+  transition: transform .4s var(--ease), background .3s;
+}
+.mp .cta i::before {
+  content: ""; width: 7px; height: 7px;
+  border-right: 2px solid var(--c); border-bottom: 2px solid var(--c);
+  transform: translateY(-2px) rotate(45deg);
+}
+.mp .metric.open .cta i { transform: rotate(180deg); background: var(--c); }
+.mp .metric.open .cta i::before { border-color: #fff; }
+.mp .metric.open .cta span::before { content: "Cerrar"; }
+.mp .metric:not(.open) .cta span::before { content: "Ver explicación"; }
+
+.mp .m-body { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .5s var(--ease); }
+.mp .metric.open .m-body { grid-template-rows: 1fr; }
+.mp .m-clip { overflow: hidden; min-height: 0; }
+.mp .m-content {
+  padding: 4px 16px 18px 14px;
+  opacity: 0; transform: translateY(-6px);
+  transition: opacity .35s .1s, transform .45s .1s var(--ease);
+}
+.mp .metric.open .m-content { opacity: 1; transform: none; }
+
+.mp .sec { margin-top: 12px; }
+.mp .sec h4 { margin: 0 0 3px; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+.mp .sec p { margin: 0; font-size: .88rem; line-height: 1.55; }
+
+.mp .example { margin-top: 14px; padding: 12px 14px; background: var(--soft); border-radius: 10px; }
+.mp .example h4 { margin: 0 0 4px; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+.mp .example p { margin: 0 0 10px; font-size: .88rem; line-height: 1.55; }
+
+.mp .bar { height: 14px; background: #fff; border-radius: 99px; overflow: hidden; display: flex; box-shadow: inset 0 0 0 1px rgba(23, 49, 61, .1); }
+.mp .bar i { display: block; height: 100%; width: 0; background: var(--c); border-radius: 99px; transition: width 1s .25s var(--ease); }
+.mp .metric.open .bar i { width: var(--w); }
+.mp .bar.stack i { border-radius: 0; background: var(--sc); }
+.mp .cap { margin-top: 6px; font-size: .82rem; color: var(--ink); }
+.mp .cap b { color: var(--c); }
+.mp .legend { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: .78rem; }
+.mp .legend span::before { content: ""; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--sc); margin-right: 5px; }
+.mp .dots { display: flex; flex-wrap: wrap; gap: 6px; }
+.mp .dots i {
+  width: 22px; height: 22px; border-radius: 6px; background: var(--c);
+  transform: scale(0); transition: transform .4s var(--ease);
+  transition-delay: calc(var(--n) * 70ms + 250ms);
+}
+.mp .metric.open .dots i { transform: scale(1); }
+
+.mp .api { margin-top: 12px; font-size: .78rem; color: var(--muted); }
+.mp .api h4 { margin: 0 0 4px; font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--c); }
+.mp .op { margin-top: 4px; padding: 6px 9px; background: #eef3f4; border-radius: 7px; }
+.mp .op code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: .72rem; color: var(--ink); word-break: break-all; }
+.mp .op b { color: var(--ink); }
+
+@keyframes mp-pop   { from { opacity: 0; transform: translateY(-50%) scale(.9); } to { opacity: 1; transform: translateY(-50%) scale(1); } }
+@keyframes mp-slide { from { opacity: 0; transform: translateX(-16px); } to { opacity: 1; transform: none; } }
+@keyframes mp-draw  { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .mp *, .mp *::before, .mp *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+<!--mp:start-->
+<div class="mp">
+  <!--mp:intro-start-->
+  <header class="mp-intro">
+    <h1>Piloto de 13 métricas</h1>
+    <p class="sub">Se lee de izquierda a derecha: cada pilar se divide en dimensiones, y cada dimensión tiene una métrica del piloto. <b>Haz clic en una métrica</b> para ver qué mide, para qué sirve y un ejemplo.</p>
+  </header>
+  <!--mp:intro-end-->
+  <div class="scroller"><div class="inner">
+    <div class="heads">
+      <div class="head">Pilar</div><div></div><div class="head">Dimensión</div><div></div><div class="head">Métrica</div>
+    </div>
+    <div id="diagram"></div>
+  </div></div>
+</div>
+<!--mp:end-->
+<script>
+// Endpoints tomados de la matriz técnica del proyecto (plantillas; no se han llamado contra AWS)
+const DZ = 'https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}';
+const OPS = {
+  GetAsset: ['GET', DZ + '/assets/{identifier}'],
+  GetFormType: ['GET', DZ + '/form-types/{formTypeIdentifier}'],
+  ListSubscriptionRequests: ['GET', DZ + '/subscription-requests?status={status}'],
+  ListSubscriptions: ['GET', DZ + '/subscriptions'],
+  ListSubscriptionGrants: ['GET', DZ + '/subscription-grants'],
+  GetLineageNode: ['GET', DZ + '/lineage/nodes/{identifier}'],
+  GetDataQualityRuleset: ['POST', 'https://glue.{region}.amazonaws.com/', 'X-Amz-Target: AWSGlue.GetDataQualityRuleset'],
+  GetDataQualityResult: ['POST', 'https://glue.{region}.amazonaws.com/', 'X-Amz-Target: AWSGlue.GetDataQualityResult'],
+  GetJobRuns: ['POST', 'https://glue.{region}.amazonaws.com/', 'X-Amz-Target: AWSGlue.GetJobRuns'],
+  ListFindingsV2: ['POST', 'https://access-analyzer.{region}.amazonaws.com/findingv2'],
+  HeadObject: ['HEAD', 'https://{bucket}.s3.{region}.amazonaws.com/{Key+}'],
+  GetObject: ['GET', 'https://{bucket}.s3.{region}.amazonaws.com/{Key+}'],
+  ApplyGuardrail: ['POST', 'https://bedrock-runtime.{region}.amazonaws.com/guardrail/{guardrailIdentifier}/version/{guardrailVersion}/apply'],
+  GetBucketLifecycleConfiguration: ['GET', 'https://{bucket}.s3.{region}.amazonaws.com/?lifecycle']
+};
+
+const DATA = [
+  { cls: 'g1', name: 'Responsabilidad', q: '¿Hay personas y reglas claras detrás de cada dato?', rows: [
+    { dim: 'Responsables', id: 'M-01', name: 'Se identifica un responsable', svc: 'Amazon DataZone',
+      ops: ['GetAsset', 'GetFormType'],
+      simple: 'Mira cada conjunto de datos importante y comprueba si tiene anotado quién es su responsable, es decir, a quién preguntar si algo falla o si alguien pide acceso.',
+      uso: 'Encuentra datos «huérfanos», que nadie cuida. Sin responsable, los errores y las solicitudes se quedan sin dueño.',
+      ej: 'Se revisan 20 activos de datos. 16 tienen responsable anotado y 4 no.',
+      viz: { t: 'ratio', num: 16, den: 20, cap: '<b>16 de 20</b> con responsable · <b>80 %</b>' },
+    },
+    { dim: 'Políticas de uso', id: 'M-04', name: 'Solicitudes y concesiones por estado', svc: 'Amazon DataZone',
+      ops: ['ListSubscriptionRequests', 'ListSubscriptions', 'ListSubscriptionGrants'],
+      simple: 'Cuenta las solicitudes de acceso a datos de un periodo y en qué quedó cada una: aprobada, rechazada o pendiente. De las aprobadas, mira cuántas ya se convirtieron en un acceso real.',
+      uso: 'Muestra si las reglas de uso funcionan en la práctica: si hay solicitudes sin respuesta o aprobaciones que nunca se llevaron a cabo.',
+      ej: 'Llegan 10 solicitudes: 6 aprobadas, 2 rechazadas y 2 pendientes. De las 6 aprobadas, 5 ya tienen el acceso concedido y 1 está esperando.',
+      viz: { t: 'stack', parts: [[6, 'Aprobadas', '#1f9a6b'], [2, 'Rechazadas', '#d14343'], [2, 'Pendientes', '#e0a526']], cap: '10 solicitudes en total · <b>5 de las 6 aprobadas</b> con acceso ejecutado' },
+    }
+  ]},
+  { cls: 'g2', name: 'Visibilidad', q: '¿Se sabe qué datos existen, qué significan y de dónde vienen?', rows: [
+    { dim: 'Catálogo', id: 'M-07', name: 'Completitud de metadatos requeridos', svc: 'Amazon DataZone',
+      ops: ['GetFormType', 'GetAsset'],
+      simple: 'Revisa que las fichas que describen los datos (nombre, descripción, responsable, etc.) tengan llenos todos los campos obligatorios, como un formulario sin casillas vacías.',
+      uso: 'Una ficha incompleta hace difícil encontrar y entender un dato. La métrica dice cuánto falta por completar.',
+      ej: '20 activos × 5 campos obligatorios = 100 casillas. 90 están llenas y 10 vacías.',
+      viz: { t: 'ratio', num: 90, den: 100, cap: '<b>90 de 100</b> casillas llenas · <b>90 %</b>' },
+    },
+    { dim: 'Linaje', id: 'M-09', name: 'Cobertura de tramos esperados de linaje', svc: 'Amazon DataZone',
+      ops: ['GetLineageNode'],
+      simple: 'Un dato viaja: nace en un origen, se transforma y llega a un destino. Esta métrica comprueba cuántos de esos pasos esperados están documentados.',
+      uso: 'Permite saber de dónde viene un dato y qué se afecta si cambia o falla. Sin linaje, investigar un error es mucho más lento.',
+      ej: 'El mapa aprobado tiene 10 pasos, por ejemplo «ventas → limpieza → informe». 8 están documentados y 2 no.',
+      viz: { t: 'ratio', num: 8, den: 10, cap: '<b>8 de 10</b> pasos documentados · <b>80 %</b>' },
+    }
+  ]},
+  { cls: 'g3', name: 'Calidad', q: '¿Los datos y los procesos que los producen son confiables?', rows: [
+    { dim: 'Reglas de calidad', id: 'M-11', name: 'Nulos y ausentes de valores requeridos', svc: 'AWS Glue',
+      ops: ['GetDataQualityRuleset', 'GetDataQualityResult'],
+      simple: 'Cuenta cuántos valores obligatorios están vacíos en una tabla de datos.',
+      uso: 'Un campo clave vacío puede romper informes, cruces entre tablas o decisiones. La métrica indica si los datos están completos para usarse.',
+      ej: 'En 100 pedidos, el campo cliente_id es obligatorio. 10 pedidos lo tienen vacío.',
+      viz: { t: 'ratio', num: 90, den: 100, cap: '<b>90 de 100</b> completos · faltan <b>10</b> (10 %)' },
+    },
+    { dim: 'Pipelines', id: 'M-16', name: 'Éxito de ejecuciones', svc: 'AWS Glue',
+      ops: ['GetJobRuns'],
+      simple: 'Mira las veces que corrió un proceso de carga o transformación de datos y cuántas terminaron bien.',
+      uso: 'Indica qué tan confiable es el proceso que alimenta los datos. Muchos fallos significan datos tardíos, incompletos o ausentes.',
+      ej: 'Hay 20 ejecuciones terminadas: 18 exitosas y 2 con error. Otras 3 siguen en curso y todavía no se cuentan.',
+      viz: { t: 'ratio', num: 18, den: 20, cap: '<b>18 de 20</b> exitosas · <b>90 %</b>' },
+    },
+    { dim: 'Curación', id: 'M-18', name: 'Cobertura de controles de salida', svc: 'AWS Glue',
+      ops: ['GetDataQualityRuleset', 'GetDataQualityResult'],
+      simple: 'Antes de entregar los datos se planifican revisiones de calidad. Esta métrica cuenta cuántas de esas revisiones se hicieron de verdad y dejaron un resultado.',
+      uso: 'Confirma que los datos se revisan antes de pasar al siguiente uso, no solo que exista un plan.',
+      ej: 'Se planifican 10 revisiones: 8 se ejecutaron y 2 no. De las 8, 6 aprobaron y 2 fallaron.',
+      viz: { t: 'ratio', num: 8, den: 10, cap: '<b>8 de 10</b> con resultado · <b>80 %</b>' },
+    }
+  ]},
+  { cls: 'g4', name: 'Acceso y seguridad', q: '¿Solo las personas correctas acceden a los datos, y están protegidos y auditables?', rows: [
+    { dim: 'Acceso mínimo', id: 'M-21', name: 'Hallazgos de permisos no utilizados', svc: 'IAM Access Analyzer',
+      ops: ['ListFindingsV2'],
+      simple: 'Cuenta permisos que se dieron pero que nadie usó durante un periodo, como llaves que nunca se han girado.',
+      uso: 'Apoya el principio de «solo los permisos necesarios». Los permisos sin uso se pueden revisar y retirar para reducir riesgos.',
+      ej: 'En los últimos 90 días, la herramienta de AWS detecta 8 permisos sin uso.',
+      viz: { t: 'dots', n: 8, cap: '<b>8 hallazgos</b> en 90 días' },
+    },
+    { dim: 'Protección', id: 'M-22', name: 'Cifrado conforme de objetos o versiones', svc: 'Amazon S3',
+      ops: ['HeadObject'],
+      simple: 'Revisa archivos guardados en almacenamiento y comprueba si están cifrados con el método y la clave que exige la política.',
+      uso: 'Asegura que los datos guardados estén protegidos como se acordó, incluso si alguien accediera al almacenamiento sin permiso.',
+      ej: 'Se examinan 100 versiones de archivos: 90 usan el cifrado y la clave exigidos y 10 no.',
+      viz: { t: 'ratio', num: 90, den: 100, cap: '<b>90 de 100</b> conformes · <b>90 %</b>' },
+    },
+    { dim: 'Auditoría', id: 'M-25', name: 'Completitud de registros de auditoría', svc: 'Amazon S3',
+      ops: ['GetObject'],
+      simple: 'Abre un archivo de registro de actividad y comprueba que cada línea diga quién hizo qué, sobre qué recurso, cuándo y con qué resultado.',
+      uso: 'Un registro incompleto sirve poco para investigar un incidente o para demostrar quién accedió a un dato.',
+      ej: 'De 100 registros revisados, 95 traen todos los campos y a 5 les falta alguno.',
+      viz: { t: 'ratio', num: 95, den: 100, cap: '<b>95 de 100</b> completos · <b>95 %</b>' },
+    }
+  ]},
+  { cls: 'g5', name: 'Cumplimiento y privacidad', q: '¿Se cumplen las reglas sobre datos sensibles, privacidad y conservación?', rows: [
+    { dim: 'Sensibles', id: 'M-26', name: 'Cobertura de clasificación', svc: 'Amazon DataZone',
+      ops: ['GetAsset', 'GetFormType'],
+      simple: 'Comprueba cuántos activos de datos tienen registrada una etiqueta de sensibilidad vigente, como público, interno o confidencial.',
+      uso: 'Si un dato no está clasificado, no se sabe qué protección necesita. Es el punto de partida de las demás medidas de privacidad.',
+      ej: 'De 50 activos elegibles, 40 tienen clasificación vigente y 10 no.',
+      viz: { t: 'ratio', num: 40, den: 50, cap: '<b>40 de 50</b> clasificados · <b>80 %</b>' },
+    },
+    { dim: 'Privacidad E/S', id: 'M-27', name: 'Casos infractores con acción esperada', svc: 'Amazon Bedrock (Guardrails)',
+      ops: ['ApplyGuardrail'],
+      simple: 'Se le presentan al filtro de privacidad casos de prueba que deberían bloquearse o enmascararse, y se cuenta cuántas veces hace lo esperado.',
+      uso: 'Comprueba que el control de privacidad funciona ante contenido problemático, y no solo que esté activado.',
+      ej: 'Se prueban 20 casos infractores, por ejemplo un mensaje con un número de tarjeta que debería enmascararse. En 18 el filtro actúa como se esperaba y en 2 no.',
+      viz: { t: 'ratio', num: 18, den: 20, cap: '<b>18 de 20</b> con la acción esperada · <b>90 %</b>' },
+    },
+    { dim: 'Retención', id: 'M-29', name: 'Reglas de conservación conformes con política', svc: 'Amazon S3',
+      ops: ['GetBucketLifecycleConfiguration'],
+      simple: 'Revisa si los lugares donde se guardan datos tienen configurada una regla de conservación que coincide con la política, por ejemplo borrar a los 30 días.',
+      uso: 'Evita guardar datos más tiempo del permitido o borrarlos antes de lo debido.',
+      ej: 'La política dice 30 días. De 10 almacenes sujetos, 8 tienen una regla coherente y 2 no.',
+      viz: { t: 'ratio', num: 8, den: 10, cap: '<b>8 de 10</b> conformes · <b>80 %</b>' },
+    }
+  ]}
+];
+
+const pct = (n, d) => (n / d * 100).toFixed(0).replace('.', ',');
+
+function vizHtml(v) {
+  if (v.t === 'ratio') {
+    return `<div class="bar"><i style="--w:${pct(v.num, v.den)}%"></i></div><div class="cap">${v.cap}</div>`;
+  }
+  if (v.t === 'stack') {
+    const total = v.parts.reduce((a, p) => a + p[0], 0);
+    const segs = v.parts.map(p => `<i style="--w:${p[0] / total * 100}%;--sc:${p[2]}"></i>`).join('');
+    const leg = v.parts.map(p => `<span style="--sc:${p[2]}"><b>${p[0]}</b> ${p[1]}</span>`).join('');
+    return `<div class="bar stack">${segs}</div><div class="legend">${leg}</div><div class="cap">${v.cap}</div>`;
+  }
+  const dots = Array.from({ length: v.n }, (_, i) => `<i style="--n:${i}"></i>`).join('');
+  return `<div class="dots">${dots}</div><div class="cap">${v.cap}</div>`;
+}
+
+function opsHtml(m) {
+  const items = m.ops.map(n => {
+    const o = OPS[n];
+    return `<div class="op"><b>${n}</b><br><code>${o[0]} ${o[1]}</code>${o[2] ? `<br><code>${o[2]}</code>` : ''}</div>`;
+  }).join('');
+  return `<div class="api"><h4>Qué consulta en AWS · ${m.svc}</h4>${items}</div>`;
+}
+
+function rowHtml(g, gi, r, ri) {
+  const first = ri === 0 ? ' first' : '';
+  const last = ri === g.rows.length - 1 ? ' last' : '';
+  return `
+  <div class="row${first}${last}" style="--ri:${ri}">
+    <div class="branch"></div>
+    <div class="dim">${r.dim}</div>
+    <div class="link"></div>
+    <article class="metric" id="${r.id}">
+      <button class="m-head" type="button" aria-expanded="false" aria-controls="body-${r.id}">
+        <span class="m-title"><span class="id">${r.id}</span><span class="name">${r.name}</span><span class="svc">${r.svc}</span></span>
+        <span class="cta"><span></span><i></i></span>
+      </button>
+      <div class="m-body" id="body-${r.id}"><div class="m-clip"><div class="m-content">
+        <div class="sec"><h4>En palabras simples</h4><p>${r.simple}</p></div>
+        <div class="sec"><h4>Para qué sirve</h4><p>${r.uso}</p></div>
+        <div class="example"><h4>Ejemplo ilustrativo</h4><p>${r.ej}</p>${vizHtml(r.viz)}</div>
+        ${opsHtml(r)}
+      </div></div></div>
+    </article>
+  </div>`;
+}
+
+const root = document.getElementById('diagram');
+root.innerHTML = DATA.map((g, gi) => `
+  <section class="group ${g.cls}" style="--gi:${gi}">
+    <div class="pillar"><b>${g.name}</b><span>${g.q}</span></div>
+    <div class="rows">${g.rows.map((r, ri) => rowHtml(g, gi, r, ri)).join('')}</div>
+  </section>`).join('');
+
+// Mantiene el pilar centrado entre la primera y la última dimensión, también durante la animación
+function placePillars() {
+  document.querySelectorAll('.group').forEach(group => {
+    const rows = group.querySelectorAll('.row');
+    const first = rows[0], last = rows[rows.length - 1];
+    const cy = 42;  // --pad (8) + --dim-h / 2 (34)
+    const mid = (first.offsetTop + cy + last.offsetTop + cy) / 2;
+    group.querySelector('.pillar').style.top = mid + 'px';
+  });
+}
+const ro = new ResizeObserver(placePillars);
+document.querySelectorAll('.rows').forEach(el => ro.observe(el));
+placePillars();
+
+// Acordeón: una métrica abierta a la vez
+function toggle(metric, open) {
+  metric.classList.toggle('open', open);
+  metric.querySelector('.m-head').setAttribute('aria-expanded', open);
+}
+document.querySelectorAll('.metric').forEach(metric => {
+  metric.querySelector('.m-head').addEventListener('click', () => {
+    const willOpen = !metric.classList.contains('open');
+    document.querySelectorAll('.metric.open').forEach(o => toggle(o, false));
+    toggle(metric, willOpen);
+    if (willOpen) setTimeout(() => metric.scrollIntoView({ block: 'nearest', behavior: 'smooth' }), 250);
+  });
+});
+
+// Permite abrir una métrica directamente con #M-27
+const start = document.getElementById(location.hash.slice(1));
+if (start && start.classList.contains('metric')) toggle(start, true);
+</script>
+</body>
+</html>

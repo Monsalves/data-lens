@@ -2,7 +2,7 @@
 
 Sitio estático con Astro. Requiere Node 24 LTS (mínimo 22.23.4) y npm.
 
-La portada `/data-lens/` y `/data-lens/planificacion/` muestran el tablero. La metodología, el mapa preliminar AWS y las dos planillas Excel tienen páginas de lectura dentro del sitio, con retorno a la planificación. Los originales están disponibles para descarga.
+La portada `/data-lens/` y `/data-lens/planificacion/` muestran el tablero. `/data-lens/metricas-piloto/` presenta el diagrama de las 13 métricas del piloto, evidencia adicional de S03; su fuente es `investigacion/Diagrama_Metricas_Piloto_13.html`, de donde `npm run sync` extrae estilos, estructura y script para la página. La metodología, el mapa preliminar AWS y las dos planillas Excel tienen páginas de lectura dentro del sitio, con retorno a la planificación. Los originales están disponibles para descarga.
 
 ## Abrir y construir
 

@@ -1,0 +1,33 @@
+---
+import '../../styles/custom.css';
+import diagram from '../../data/metricas-piloto.json';
+import SiteHeader from '../../components/SiteHeader.astro';
+
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Diagrama de las 13 métricas del piloto Data Lens, organizadas por pilar y dimensión, con su explicación y un ejemplo." />
+    <title>Métricas del piloto · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <style>
+      .metrics-wrap{max-width:1180px;margin:0 auto;padding:2rem 1.25rem 4rem}
+      .metrics-note{border-left:4px solid #1f8b89;background:#eaf5f2;padding:.8rem 1rem;margin:1.25rem 0 1.75rem;line-height:1.5}
+    </style>
+    <style is:inline set:html={diagram.style}></style>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <SiteHeader />
+    <main id="contenido" class="metrics-wrap">
+      <a class="back-link" href={base}>← Volver a planificación</a>
+      <div class="document-top"><div><span class="eyebrow">DOCUMENTO / INVESTIGACIÓN S03</span><h1>Métricas del piloto</h1><p>Las 13 métricas organizadas por pilar y dimensión, de izquierda a derecha.</p></div><a class="download-link" href={`${base}descargas/Diagrama_Metricas_Piloto_13.html`} download>Descargar HTML ↓</a></div>
+      <p class="metrics-note"><strong>Material en desarrollo.</strong> Las métricas están especificadas y los ejemplos son ilustrativos. Todavía no se han medido en una cuenta AWS.</p>
+      <Fragment set:html={diagram.markup} />
+    </main>
+    <script is:inline set:html={diagram.script}></script>
+  </body>
+</html>
