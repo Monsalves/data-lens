@@ -1,0 +1,5 @@
+---
+import WorkbookPage from '../../components/WorkbookPage.astro';
+import preview from '../../data/planning-preview.json';
+---
+<WorkbookPage title="Planificación del proyecto" description="Hitos, actividades y cronograma del plan publicado." file="Planificacion.xlsx" sheets={preview.sheets} />

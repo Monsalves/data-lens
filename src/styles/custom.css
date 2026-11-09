@@ -88,19 +88,15 @@ h1 { margin: 0; font-size: clamp(1.8rem, 3vw, 2.5rem); line-height: 1.06; letter
 .activity-table thead th { background: var(--surface-soft); color: var(--text); font-size: .78rem; }
 .activity-table tbody th { white-space: nowrap; }
 .activity-table a { display: inline-block; margin-right: .7rem; font-weight: 650; }
-.excel-preview { width: min(96vw, 1180px); max-width: none; max-height: 94vh; padding: 0; border: 1px solid var(--line); border-radius: .9rem; background: var(--surface); color: var(--text); box-shadow: 0 18px 80px rgb(0 0 0 / 25%); }
-.excel-preview::backdrop { background: rgb(5 24 31 / 67%); }
-.excel-preview-layout { display: flex; flex-direction: column; max-height: 94vh; }
-.excel-preview-header { display: flex; align-items: start; justify-content: space-between; gap: 1rem; padding: 1.1rem 1.35rem .55rem; }
-.excel-preview-header h2 { margin: 0; font-size: 1.25rem; }
-.excel-preview-header p { margin: .3rem 0 0; color: var(--muted); font-size: .85rem; }
-.excel-preview-close { flex: 0 0 auto; border: 1px solid var(--line); border-radius: .55rem; padding: .45rem .7rem; background: var(--surface); color: var(--text); cursor: pointer; }
-.excel-preview-actions { padding: 0 1.35rem .8rem; font-size: .9rem; font-weight: 700; }
+.workbook-layout { width: 100%; padding: 2rem clamp(1rem, 3vw, 2.75rem) 4rem; }
+.workbook-viewer { overflow: hidden; border: 1px solid var(--line); border-radius: .9rem; background: var(--surface); box-shadow: 0 8px 35px rgb(20 55 65 / 5%); }
+.back-link { display: inline-flex; align-items: center; min-height: 2.4rem; margin-bottom: 1.3rem; padding: .4rem .7rem; border: 1px solid var(--line); border-radius: .55rem; background: var(--surface); color: var(--text); font-size: .85rem; font-weight: 700; text-decoration: none; }
+.back-link:hover { border-color: var(--accent); color: var(--accent); }
 .excel-sheet-tabs { display: flex; gap: .3rem; overflow-x: auto; padding: 0 1.35rem; border-bottom: 1px solid var(--line); }
 .excel-sheet-tabs button { flex: 0 0 auto; border: 0; border-bottom: 3px solid transparent; padding: .65rem .8rem; background: transparent; color: var(--text); cursor: pointer; }
 .excel-sheet-tabs button[aria-selected='true'] { border-bottom-color: var(--accent); color: var(--accent); font-weight: 750; }
 .excel-sheet-panel { min-height: 0; overflow: hidden; }
-.excel-sheet-scroll { max-height: min(68vh, 720px); overflow: auto; }
+.excel-sheet-scroll { max-height: calc(100vh - 17rem); min-height: 55vh; overflow: auto; }
 .excel-sheet-table { border-collapse: collapse; table-layout: fixed; width: max-content; min-width: 100%; background: #fff; color: #173442; font-size: .83rem; }
 .excel-sheet-table th, .excel-sheet-table td { border: 1px solid #d9e0e2; padding: .5rem .65rem; vertical-align: top; }
 .excel-sheet-table thead th { position: sticky; top: 0; z-index: 2; background: #e8eef0; text-align: center; }

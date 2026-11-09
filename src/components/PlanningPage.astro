@@ -28,7 +28,7 @@ const lastDate = planning.activities.at(-1)?.end;
         <p class="page-intro">Consulta las actividades, sus entregables y los documentos publicados sin salir del sitio.</p></div>
         {firstDate && lastDate ? <p class="page-summary">{dateLabel(firstDate)} — {dateLabel(lastDate)}</p> : null}
       </div>
-      <div class="resource-strip" aria-label="Documentos principales"><span>DOCUMENTOS DEL PROYECTO</span><a href={`${base}metodologia/`}>Marco de trabajo 1.4 →</a><a href={`${base}descargas/Plantilla_Assessment_Datos_F0_F3.xlsx`} data-excel-preview="template">Plantilla F0–F3 →</a><a href={`${base}descargas/Planificacion.xlsx`} data-excel-preview="planning">Planificación Excel →</a></div>
+      <div class="resource-strip" aria-label="Documentos principales"><span>DOCUMENTOS DEL PROYECTO</span><a href={`${base}metodologia/`}>Marco de trabajo 1.4 →</a><a href={`${base}plantilla/`}>Plantilla F0–F3 →</a><a href={`${base}planificacion-excel/`}>Planificación Excel →</a></div>
       <PlanningBoard />
     </main>
   </body>

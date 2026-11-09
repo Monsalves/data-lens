@@ -1,0 +1,67 @@
+---
+import '../styles/custom.css';
+import SiteHeader from './SiteHeader.astro';
+
+type PreviewCell = { text: string; bold: boolean; bg?: string; fg?: string; align?: string; colSpan?: number; rowSpan?: number };
+type Sheet = { name: string; rows: (PreviewCell | null)[][] };
+interface Props { title: string; description: string; file: string; sheets: Sheet[] }
+const { title, description, file, sheets } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const columnLabel = (index: number) => {
+  let value = index + 1;
+  let label = '';
+  while (value > 0) { value--; label = String.fromCharCode(65 + value % 26) + label; value = Math.floor(value / 26); }
+  return label;
+};
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title} · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al documento</a>
+    <SiteHeader />
+    <main id="contenido" class="workbook-layout">
+      <a class="back-link" href={base}>← Volver a planificación</a>
+      <div class="document-top"><div><span class="eyebrow">DOCUMENTO / EXCEL</span><h1>{title}</h1><p>{description}</p></div><a class="download-link" href={`${base}descargas/${file}`} download>Descargar Excel original ↓</a></div>
+      <div class="workbook-viewer">
+        <div class="excel-sheet-tabs" role="tablist" aria-label={`Hojas de ${title}`}>
+          {sheets.map((sheet, index) => <button type="button" role="tab" id={`sheet-tab-${index}`} aria-controls={`sheet-panel-${index}`} aria-selected={index === 0 ? 'true' : 'false'} tabindex={index === 0 ? 0 : -1} data-excel-tab={index}>{sheet.name}</button>)}
+        </div>
+        {sheets.map((sheet, index) => <section id={`sheet-panel-${index}`} role="tabpanel" aria-labelledby={`sheet-tab-${index}`} class="excel-sheet-panel" hidden={index !== 0}>
+          <div class="excel-sheet-scroll" tabindex="0" role="region" aria-label={`Hoja ${sheet.name}, desplazable`}>
+            <table class="excel-sheet-table" style={`width:calc(3rem + ${sheet.rows[0].length} * 15rem)`}>
+              <colgroup><col style="width:3rem" />{sheet.rows[0].map(() => <col style="width:15rem" />)}</colgroup>
+              <thead><tr><th scope="col" aria-label="Número de fila"></th>{sheet.rows[0].map((_, col) => <th scope="col">{columnLabel(col)}</th>)}</tr></thead>
+              <tbody>{sheet.rows.map((row, rowIndex) => <tr><th scope="row">{rowIndex + 1}</th>{row.map((cell) => cell && <td colspan={cell.colSpan} rowspan={cell.rowSpan} class:list={{ 'excel-cell-bold': cell.bold }} style={`background-color:${cell.bg ?? 'transparent'};color:${cell.fg ?? 'inherit'};text-align:${cell.align ?? 'left'}`}>{cell.text}</td>)}</tr>)}</tbody>
+            </table>
+          </div>
+        </section>)}
+      </div>
+      <p class="planning-source">Vista de lectura del archivo publicado. Descarga el Excel para editarlo y consultar sus funciones originales.</p>
+    </main>
+    <script>
+      const tabs = [...document.querySelectorAll<HTMLButtonElement>('[data-excel-tab]')];
+      const panels = [...document.querySelectorAll<HTMLElement>('.excel-sheet-panel')];
+      function selectSheet(index: number) {
+        tabs.forEach((tab, i) => { tab.setAttribute('aria-selected', String(i === index)); tab.tabIndex = i === index ? 0 : -1; });
+        panels.forEach((panel, i) => { panel.hidden = i !== index; });
+        tabs[index]?.focus();
+      }
+      tabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => selectSheet(index));
+        tab.addEventListener('keydown', (event) => {
+          if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+            event.preventDefault();
+            selectSheet((index + (event.key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length);
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

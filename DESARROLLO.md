@@ -2,7 +2,7 @@
 
 Sitio estático con Astro. Requiere Node 24 LTS (mínimo 22.23.4) y npm.
 
-La portada `/data-lens/` y `/data-lens/planificacion/` muestran el tablero. La metodología y el mapa preliminar AWS tienen páginas de lectura dentro del sitio; las dos planillas Excel se previsualizan en un diálogo con sus hojas. Los originales están disponibles para descarga.
+La portada `/data-lens/` y `/data-lens/planificacion/` muestran el tablero. La metodología, el mapa preliminar AWS y las dos planillas Excel tienen páginas de lectura dentro del sitio, con retorno a la planificación. Los originales están disponibles para descarga.
 
 ## Abrir y construir
 
