@@ -7,5 +7,6 @@ dist/
 src/data/planning.json
 src/data/aws-map.json
 src/data/template-preview.json
+src/data/planning-preview.json
 src/content/docs/metodologia.md
 public/descargas/

@@ -1,6 +1,7 @@
 ---
 import '../styles/custom.css';
 import PlanningBoard from './PlanningBoard.astro';
+import SiteHeader from './SiteHeader.astro';
 import planning from '../data/planning.json';
 
 const base = import.meta.env.BASE_URL;
@@ -20,17 +21,14 @@ const lastDate = planning.activities.at(-1)?.end;
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar a la planificación</a>
-    <header class="site-header">
-      <a class="brand" href={base} aria-label="Data Lens, inicio">
-        <span class="brand-mark" aria-hidden="true">DL</span>
-        <span>Data Lens</span>
-      </a>
-    </header>
+    <SiteHeader />
     <main id="contenido" class="page-content">
       <div class="page-heading">
-        <h1>Planificación</h1>
+        <div><span class="eyebrow">DATA LENS / HOJA DE RUTA</span><h1>Planificación del assessment de datos</h1>
+        <p class="page-intro">Consulta las actividades, sus entregables y los documentos publicados sin salir del sitio.</p></div>
         {firstDate && lastDate ? <p class="page-summary">{dateLabel(firstDate)} — {dateLabel(lastDate)}</p> : null}
       </div>
+      <div class="resource-strip" aria-label="Documentos principales"><span>DOCUMENTOS DEL PROYECTO</span><a href={`${base}metodologia/`}>Marco de trabajo 1.4 →</a><a href={`${base}descargas/Plantilla_Assessment_Datos_F0_F3.xlsx`} data-excel-preview="template">Plantilla F0–F3 →</a><a href={`${base}descargas/Planificacion.xlsx`} data-excel-preview="planning">Planificación Excel →</a></div>
       <PlanningBoard />
     </main>
   </body>

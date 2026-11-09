@@ -1,0 +1,24 @@
+---
+import '../../styles/custom.css';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { Content } from '../../../metodologia/Marco_Trabajo_Datos_v1_4.md';
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Marco de trabajo de assessment de la capa de datos, versión 1.4." />
+    <title>Metodología 1.4 · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al documento</a>
+    <SiteHeader />
+    <main id="contenido" class="document-layout">
+      <div class="document-top"><div><span class="eyebrow">DOCUMENTO / METODOLOGÍA</span><h1>Marco de trabajo 1.4</h1><p>Guía publicada para aplicar el assessment de la capa de datos.</p></div><a class="download-link" href={`${base}descargas/Marco_Trabajo_Datos_v1_4.md`} download>Descargar Markdown ↓</a></div>
+      <article class="document-content"><Content /></article>
+    </main>
+  </body>
+</html>

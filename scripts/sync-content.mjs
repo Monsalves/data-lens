@@ -12,6 +12,7 @@ const templatePath = 'metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx';
 const readme = await readFile(at('README.md'), 'utf8');
 const activities = parsePlanning(readme);
 const templatePreview = await readExcelPreview(at(templatePath));
+const planningPreview = await readExcelPreview(at('planificacion/Planificacion.xlsx'));
 if (templatePreview.sheets.map((sheet) => sheet.name).join('|') !== 'Guía de uso|F0|F1|F2|F3|Matriz') {
   throw new Error('La plantilla Excel no contiene las seis hojas esperadas.');
 }
@@ -40,7 +41,9 @@ await Promise.all([
   writeFile(at('src/data/planning.json'), JSON.stringify({ source: 'README.md', activities }, null, 2) + '\n'),
   writeFile(at('src/data/aws-map.json'), JSON.stringify(awsRows, null, 2) + '\n'),
   writeFile(at('src/data/template-preview.json'), JSON.stringify(templatePreview) + '\n'),
+  writeFile(at('src/data/planning-preview.json'), JSON.stringify(planningPreview) + '\n'),
   copyFile(at(methodologyPath), at('public/descargas/Marco_Trabajo_Datos_v1_4.md')),
+  copyFile(at(awsDocPath), at('public/descargas/Servicios_AWS_S03_borrador.md')),
   copyFile(at(templatePath), at('public/descargas/Plantilla_Assessment_Datos_F0_F3.xlsx')),
   copyFile(at('planificacion/Planificacion.xlsx'), at('public/descargas/Planificacion.xlsx'))
 ]);

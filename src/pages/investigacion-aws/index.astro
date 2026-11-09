@@ -1,6 +1,7 @@
 ---
 import '../../styles/custom.css';
 import rows from '../../data/aws-map.json';
+import SiteHeader from '../../components/SiteHeader.astro';
 
 const base = import.meta.env.BASE_URL;
 const pillars = [...new Set(rows.map((row) => row.pillar))];
@@ -29,9 +30,9 @@ const pillars = [...new Set(rows.map((row) => row.pillar))];
   </head>
   <body>
     <a class="skip-link" href="#contenido">Saltar al contenido</a>
-    <header class="site-header"><a class="brand" href={base} aria-label="Data Lens, inicio"><span class="brand-mark" aria-hidden="true">DL</span><span>Data Lens</span></a></header>
+    <SiteHeader />
     <main id="contenido" class="aws-wrap">
-      <h1>Mapa preliminar de servicios AWS</h1>
+      <div class="document-top"><div><span class="eyebrow">DOCUMENTO / INVESTIGACIÓN S03</span><h1>Mapa preliminar de servicios AWS</h1></div><a class="download-link" href={`${base}descargas/Servicios_AWS_S03_borrador.md`} download>Descargar Markdown ↓</a></div>
       <p class="aws-note"><strong>Borrador incompleto.</strong> Los servicios son candidatos y todavía no se han validado en una cuenta AWS.</p>
       <div class="aws-controls">
         <label for="pillar-filter">Pilar<select id="pillar-filter"><option value="">Todos</option>{pillars.map((pillar) => <option value={pillar}>{pillar}</option>)}</select></label>

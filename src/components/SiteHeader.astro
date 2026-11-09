@@ -1,0 +1,11 @@
+---
+const base = import.meta.env.BASE_URL;
+---
+<header class="site-header">
+  <a class="brand" href={base} aria-label="Data Lens, inicio"><span class="brand-mark" aria-hidden="true">DL</span><span>Data Lens</span></a>
+  <nav class="site-nav" aria-label="Navegación principal">
+    <a href={base}>Planificación</a>
+    <a href={`${base}metodologia/`}>Metodología</a>
+    <a href={`${base}investigacion-aws/`}>Servicios AWS</a>
+  </nav>
+</header>
