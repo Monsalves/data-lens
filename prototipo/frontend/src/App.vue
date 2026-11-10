@@ -149,7 +149,7 @@ function dateTime(value) { return value ? new Intl.DateTimeFormat('es-CL', { dat
 
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" :permanent="$vuetify.display.mdAndUp" :temporary="$vuetify.display.smAndDown" width="252" class="side-nav" theme="dark">
+    <v-navigation-drawer v-model="drawer" :permanent="$vuetify.display.mdAndUp" :temporary="$vuetify.display.smAndDown" width="252" class="side-nav">
       <template #prepend>
         <div class="brand-wrap"><div class="brand-icon"><v-icon icon="mdi-chart-arc" size="23" /></div><div><div class="brand-name">data lens<span>.</span></div><div class="brand-sub">AWS DATA INTELLIGENCE</div></div></div>
       </template>
