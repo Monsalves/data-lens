@@ -52,19 +52,22 @@ function inspectContribution(kind) {
 function iconFor(tone) {
   return { success: 'mdi-check-circle-outline', error: 'mdi-alert-circle-outline', warning: 'mdi-clock-alert-outline', info: 'mdi-information-outline', neutral: 'mdi-minus-circle-outline' }[tone] || 'mdi-information-outline'
 }
+function displayReference(reference) {
+  return reference.replace(/^M-\d{2}-/u, '')
+}
 function recordRef(row) {
   if (row.referenceId && !row.inNumerator) return row.referenceId
-  return props.result ? (row.evidenceRef || `${props.metric.id}-${row.id}-SIM`) : 'Sin ejecución'
+  return props.result ? displayReference(row.evidenceRef || `${row.id}-SIM`) : 'Sin ejecución'
 }
 function formattedDate(value) { return value ? new Intl.DateTimeFormat('es-CL', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(value)) : '—' }
 </script>
 
 <template>
   <div class="metric-full-main">
-    <div class="metric-mobile-select"><v-select :model-value="metric.id" :items="metrics.map(m => ({ title: `${m.id} · ${m.dimension}`, value: m.id }))" item-title="title" item-value="value" label="Ir a otra métrica" variant="outlined" density="compact" hide-details @update:model-value="id => emit('select', id)" /></div>
-    <div class="metric-full-top"><button type="button" @click="emit('back')"><v-icon icon="mdi-arrow-left" size="17" /> {{ returnLabel }}</button><span>{{ metric.pillar }} <v-icon icon="mdi-chevron-right" size="15" /> {{ metric.dimension }}</span><div class="metric-nav-arrows"><button type="button" :disabled="!previous" :title="previous ? `Anterior: ${previous.id}` : 'Primera métrica'" @click="previous && emit('select', previous.id)"><v-icon icon="mdi-arrow-left" size="18" /></button><button type="button" :disabled="!next" :title="next ? `Siguiente: ${next.id}` : 'Última métrica'" @click="next && emit('select', next.id)"><v-icon icon="mdi-arrow-right" size="18" /></button></div></div>
+    <div class="metric-mobile-select"><v-select :model-value="metric.id" :items="metrics.map(m => ({ title: m.name, value: m.id }))" item-title="title" item-value="value" label="Ir a otra métrica" variant="outlined" density="compact" hide-details @update:model-value="id => emit('select', id)" /></div>
+    <div class="metric-full-top"><button type="button" @click="emit('back')"><v-icon icon="mdi-arrow-left" size="17" /> {{ returnLabel }}</button><span>{{ metric.pillar }} <v-icon icon="mdi-chevron-right" size="15" /> {{ metric.dimension }}</span><div class="metric-nav-arrows"><button type="button" :disabled="!previous" :title="previous ? `Anterior: ${previous.name}` : 'Primera métrica'" @click="previous && emit('select', previous.id)"><v-icon icon="mdi-arrow-left" size="18" /></button><button type="button" :disabled="!next" :title="next ? `Siguiente: ${next.name}` : 'Última métrica'" @click="next && emit('select', next.id)"><v-icon icon="mdi-arrow-right" size="18" /></button></div></div>
     <div class="metric-full-banner"><v-icon icon="mdi-flask-outline" size="18" /><span>Escenario de demostración. Los elementos, estados y evidencias de esta página son sintéticos.</span></div>
-    <header class="metric-full-header"><div><span class="metric-full-id">{{ metric.id }} · {{ metric.pillar }} / {{ metric.dimension }}</span><h1>{{ metric.name }}</h1><p>{{ result ? `Ejecución ${run?.id || 'local'} · ${formattedDate(run?.endedAt)}` : 'Aún no hay ejecución; se muestra el universo ilustrativo.' }}</p></div><span class="metric-run-state" :class="result ? 'ready' : 'pending'">{{ result ? 'Calculada · simulada' : 'Pendiente' }}</span></header>
+    <header class="metric-full-header"><div><span class="metric-full-context">{{ metric.pillar }} / {{ metric.dimension }}</span><h1>{{ metric.name }}</h1><p>{{ result ? `Ejecución ${run?.id || 'local'} · ${formattedDate(run?.endedAt)}` : 'Aún no hay ejecución; se muestra el universo ilustrativo.' }}</p></div><span class="metric-run-state" :class="result ? 'ready' : 'pending'">{{ result ? 'Calculada · simulada' : 'Pendiente' }}</span></header>
     <v-alert v-if="metric.id === 'M-09'" type="info" variant="tonal" density="compact" class="mb-4">
       <strong>Referencia de esta simulación:</strong> {{ lineageReference }}. El diseño define los pares de origen y destino que se comparan con lo registrado en DataZone.
       En una evaluación real, el equipo responsable debe validar esa lista para el flujo y alcance revisados.
@@ -88,6 +91,6 @@ function formattedDate(value) { return value ? new Intl.DateTimeFormat('es-CL', 
     </section>
 
     <section class="metric-full-card metric-operations"><div class="metric-card-label">FUENTES TÉCNICAS</div><h2>Operaciones AWS previstas</h2><div class="metric-op-grid"><div v-for="op in metric.operations" :key="op.name" class="operation-card"><div><span class="method-badge">{{ op.method }}</span><strong>{{ op.name }}</strong></div><code>{{ op.endpoint }}</code><small>Campos esperados: {{ op.fields.join(', ') }}</small><a :href="op.docs" target="_blank" rel="noopener noreferrer">Documentación AWS <v-icon icon="mdi-open-in-new" size="13" /></a></div></div></section>
-    <section class="metric-full-card metric-evidence"><div class="metric-card-label">EVIDENCIA DE LA EJECUCIÓN</div><h2>Referencias</h2><div v-if="result" class="metric-evidence-list"><div v-for="id in result.evidence" :key="id" class="evidence-row"><v-icon icon="mdi-file-code-outline" size="18" /><div><strong>{{ id }}</strong><small>Referencia sintética · fixture local</small></div></div></div><p v-else>Ejecuta la simulación para generar referencias de ejemplo.</p></section>
+    <section class="metric-full-card metric-evidence"><div class="metric-card-label">EVIDENCIA DE LA EJECUCIÓN</div><h2>Referencias</h2><div v-if="result" class="metric-evidence-list"><div v-for="id in result.evidence" :key="id" class="evidence-row"><v-icon icon="mdi-file-code-outline" size="18" /><div><strong>{{ displayReference(id) }}</strong><small>Referencia sintética · fixture local</small></div></div></div><p v-else>Ejecuta la simulación para generar referencias de ejemplo.</p></section>
   </div>
 </template>

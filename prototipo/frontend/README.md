@@ -16,8 +16,8 @@ Abrir `http://127.0.0.1:5173/`. Para generar los archivos estáticos: `npm run b
 ## Recorrido para la demostración
 
 1. En **Inicio → Ver respuestas**, mostrar `GetDatabases` y `GetTables` en **Inventario → Validación Postman**. Son extractos de las respuestas reportadas por el operador, con los identificadores omitidos.
-2. En **Inventario → Mapa de bases**, recorrer una base y sus tablas de ejemplo. En **Lista de recursos**, buscar «Carga de clientes a Analítica» y abrir **Ver M-16** para explicar el paso de `ListJobs` a `GetJobRuns`.
-3. Ejecutar **Simular medición** y abrir **Ver métricas**. En M-09, usar el filtro «Sin evidencia en la consulta» y seleccionar un enlace del grafo para ver por qué figura en el diseño ficticio. Para M-01, usar «Sin responsable».
+2. En **Inventario → Mapa de bases**, recorrer una base y sus tablas de ejemplo. En **Lista de recursos**, buscar «Carga de clientes a Analítica» y abrir **Ver éxito de ejecuciones** para explicar el paso de `ListJobs` a `GetJobRuns`.
+3. Ejecutar **Simular medición** y abrir **Ver métricas**. En **Cobertura de tramos esperados de linaje**, usar el filtro «Sin evidencia en la consulta» y seleccionar un enlace del grafo para ver por qué figura en el diseño ficticio. En **Se identifica un responsable**, usar «Sin responsable».
 
 ## Qué funciona
 
