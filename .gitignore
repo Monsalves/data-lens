@@ -9,5 +9,6 @@ src/data/aws-map.json
 src/data/metricas-piloto.json
 src/data/template-preview.json
 src/data/planning-preview.json
+src/data/case-s02-preview.json
 src/content/docs/metodologia.md
 public/descargas/

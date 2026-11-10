@@ -10,12 +10,10 @@ import re
 import sys
 
 import openpyxl
-from docx import Document
 
 RAIZ = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 XLSX = os.path.join(RAIZ, "Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx")
-MD = os.path.join(RAIZ, "Contexto_Caso_S02_Banco_Tinamu_Digital.md")
-DOCX = os.path.join(RAIZ, "Contexto_Caso_S02_Banco_Tinamu_Digital.docx")
+MD = os.path.join(RAIZ, "Caso_S02_Recorrido_Metodologico.md")
 _CANDIDATAS = [
     os.path.join(RAIZ, "..", "..", "..", "publicacion", "data-lens", "metodologia", "Plantilla_Assessment_Datos_F0_F3.xlsx"),
     os.path.join(RAIZ, "..", "..", "metodologia", "Plantilla_Assessment_Datos_F0_F3.xlsx"),
@@ -90,7 +88,8 @@ chk(all(r[4] in estados for r in RES), "Estados válidos en F2")
 chk(all("Sin casos" != r[4] for r in RES), "No se usa «Sin casos» (no se comprobó población cero)")
 # ---- EV -> RES
 chk(all(r[1] in sid for r in EV), "Cada EV respalda un RES existente")
-chk(all(any(e[1] == s for e in EV) for s in sid), "Cada RES tiene al menos una EV")
+sin_respaldo = {s for s in sid if not any(e[1] == s for e in EV)}
+chk(sin_respaldo == {"RES-06", "RES-11"}, "Solo gasto y auditoría carecen de respaldo; sus límites quedan explícitos")
 carpeta_ev = RAIZ
 for e in EV:
     m = re.search(r"ruta: (\S+)", e[3])
@@ -127,12 +126,13 @@ exa_req = {e[0]: e[1] for e in EXA}; res_exa = {r[0]: r[1] for r in RES}; ev_res
 bien = True
 for m in MZ:
     f_, rq, ex, rs, ev, dx, ac = m
-    c = (f_ in fid and rq in rid and ex in eid and rs in sid and ev in vid and dx in did and (ac == "—" or ac in aid))
-    c = c and req_f[rq] == f_ and exa_req[ex] == rq and res_exa[rs] == ex and ev_res[ev] == rs and rs in dx_res[dx] and (ac == "—" or ac_dx[ac] == dx)
+    c = (f_ in fid and rq in rid and ex in eid and rs in sid and (ev in vid or ev == "—") and dx in did and (ac == "—" or ac in aid))
+    c = c and req_f[rq] == f_ and exa_req[ex] == rq and res_exa[rs] == ex and (ev == "—" and rs in sin_respaldo or ev in vid and ev_res[ev] == rs) and rs in dx_res[dx] and (ac == "—" or ac_dx[ac] == dx)
     if not c:
         bien = False; print("Fila de matriz inconsistente:", m)
 chk(bien, "Cada fila de la matriz es un camino coherente")
-chk({m[4] for m in MZ} == vid, "Todas las EV aparecen en la matriz")
+chk({m[4] for m in MZ if m[4] != "—"} == vid, "Todas las EV disponibles aparecen en la matriz")
+chk({m[3] for m in MZ if m[4] == "—"} == sin_respaldo, "La matriz muestra los dos exámenes sin respaldo")
 chk({m[5] for m in MZ} == did, "Todos los DX aparecen en la matriz")
 chk({m[6] for m in MZ if m[6] != "—"} == aid, "Todas las AC aparecen en la matriz")
 chk({m[1] for m in MZ} == rid, "Todos los REQ aparecen en la matriz")
@@ -187,45 +187,18 @@ chk(usadas == {"M-01", "M-07", "M-09", "M-16", "M-21", "M-22", "M-25", "M-26", "
 chk(not (usadas & {"M-04", "M-11", "M-18", "M-27"}) or all(
     re.findall(r"M-(?:04|11|18|27)", e[3] + e[4]) == [] for e in EXA), "M-04, M-11, M-18 y M-27 no se usan como métricas en F1")
 
-# ---- documento: IDs, sincronía md/docx
+# ---- documento principal: dolores y fases
 md = open(MD, encoding="utf-8").read()
 ids_doc = set(re.findall(r"\b(?:F|REQ|EXA|RES|EV|DX|AC)-\d{2}\b", md))
 todos = fid | rid | eid | sid | vid | did | aid
 chk(ids_doc <= todos, f"Todos los IDs del documento existen en el expediente (faltan: {sorted(ids_doc - todos)})")
-chk("Cómo leer este ejemplo" in md, "Sección «Cómo leer este ejemplo»")
-for k in ("P-01", "P-02", "P-03", "P-04", "P-05", "P-06", "P-07"):
-    chk(k in md, f"El documento sigue {k}")
-if not os.path.exists(DOCX):
-    print("AVISO: no hay .docx en esta ubicación (el repositorio publica solo Markdown); se omite la comprobación de sincronía md/Word.")
-    dx = None
-else:
-    dx = Document(DOCX)
-texto_docx = []
-for blk in (dx.element.body.iterchildren() if dx is not None else []):
-    if blk.tag.endswith("}p"):
-        texto_docx.append("".join(t.text or "" for t in blk.iter() if t.tag.endswith("}t")))
-    elif blk.tag.endswith("}tbl"):
-        for tr in blk.iter():
-            if tr.tag.endswith("}tc"):
-                texto_docx.append("".join(t.text or "" for t in tr.iter() if t.tag.endswith("}t")))
-plano_docx = re.sub(r"\s+", " ", " ".join(texto_docx))
-def plano_md(s):
-    s = s.replace("\\|", "¦").replace("**", "").replace("`", "")
-    s = re.sub(r"^\*(.*)\*$", r"\1", s, flags=re.M)    # línea en cursiva (subtítulo)
-    s = re.sub(r"(?<=\w)\*|\*(?=\w)", "", s)           # cursivas pegadas a palabras
-    s = re.sub(r"^\s*>\s?", "", s, flags=re.M)         # citas
-    s = re.sub(r"^#+\s", "", s, flags=re.M)            # títulos
-    s = re.sub(r"^\s*- ", "", s, flags=re.M)           # viñetas
-    s = re.sub(r"^\|\s*(---\s*\|\s*)+$", " ", s, flags=re.M)
-    s = s.replace("|", " ").replace("¦", "|")
-    return re.sub(r"\s+", " ", s)
-palabras_md = plano_md(md).split()
-palabras_docx = set(plano_docx.split())
-faltan = [w for w in palabras_md if w not in palabras_docx and w.strip("-| ") not in ("", "---")]
-if dx is not None:
-    chk(len(faltan) == 0, f"Md y Word contienen las mismas palabras (diferencias: {faltan[:8]})")
-    chk(len(md.split("\n## ")) - 1 == len([p for p in dx.paragraphs if p.style.name == "Heading 2"]), "Mismo número de secciones en md y Word")
-    chk(len(re.findall(r"^\| --- ", md, flags=re.M)) == len(dx.tables) - len([1 for t in dx.tables if len(t.columns) == 1]), "Mismo número de tablas en md y Word")
+chk(all(x in md for x in ("Control de activos", "Costos", "Seguridad")), "El documento explica los tres dolores")
+chk(all(x in md for x in ("F0 ·", "F1 ·", "F2 ·", "F3 ·")), "El documento explica las cuatro fases")
+chk("acta de solicitud no sustituye" in md and "acta de denegación tampoco reemplaza" in md,
+    "El documento no presenta actas ficticias como respaldo")
+chk(not os.path.exists(os.path.join(RAIZ, "evidencias_simuladas", "acta_solicitud_facturacion.md")) and
+    not os.path.exists(os.path.join(RAIZ, "evidencias_simuladas", "acta_acceso_auditoria.md")),
+    "No se publican actas ficticias")
 
 # ---- el original no se modificó
 chk(hashlib.sha256(open(ORIGEN, "rb").read()).hexdigest() != hashlib.sha256(open(XLSX, "rb").read()).hexdigest(), "La copia difiere del original (el original no se tocó)")

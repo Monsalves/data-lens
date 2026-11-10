@@ -1,4 +1,6 @@
 import ExcelJS from 'exceljs';
+import JSZip from 'jszip';
+import { readFile } from 'node:fs/promises';
 
 function columnNumber(letters) {
   return [...letters].reduce((value, letter) => value * 26 + letter.charCodeAt(0) - 64, 0);
@@ -12,7 +14,25 @@ function color(value) {
 
 export async function readExcelPreview(path) {
   const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(path);
+  // Normaliza el prefijo XML que usa la exportación del anexo; solo afecta la copia de lectura.
+  const zip = await JSZip.loadAsync(await readFile(path));
+  for (const name of Object.keys(zip.files).filter((item) => item.endsWith('.xml'))) {
+    let xml = await zip.file(name).async('string');
+    xml = xml.replace(/xmlns:x="http:\/\/schemas\.openxmlformats\.org\/spreadsheetml\/2006\/main"/gu,
+      'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"');
+    xml = xml.replace(/<\/?x:/gu, (match) => match.replace('x:', ''));
+    if (/^xl\/worksheets\/sheet\d+\.xml$/u.test(name)) xml = xml.replace(/<drawing\b[^>]*\/>/gu, '');
+    zip.file(name, xml);
+  }
+  // Los dibujos no se muestran en la vista de celdas y ExcelJS no reconcilia uno de ellos.
+  for (const name of Object.keys(zip.files).filter((item) => item.startsWith('xl/drawings/'))) zip.remove(name);
+  for (const name of Object.keys(zip.files).filter((item) => /^xl\/worksheets\/_rels\/sheet\d+\.xml\.rels$/u.test(item))) {
+    const xml = await zip.file(name).async('string');
+    zip.file(name, xml.replace(/<Relationship\b[^>]*Type="[^"]*\/drawing"[^>]*\/>/gu, ''));
+  }
+  const types = await zip.file('[Content_Types].xml').async('string');
+  zip.file('[Content_Types].xml', types.replace(/<Override\b[^>]*PartName="\/xl\/drawings\/[^"]+"[^>]*\/>/gu, ''));
+  await workbook.xlsx.load(await zip.generateAsync({ type: 'nodebuffer' }));
   return {
     sheets: workbook.worksheets.map((sheet) => {
       const columns = Math.min(sheet.columnCount, 20);

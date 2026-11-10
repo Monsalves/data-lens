@@ -9,10 +9,13 @@ const at = (path) => resolve(root, path);
 const methodologyPath = 'metodologia/Marco_Trabajo_Datos_v1_4.md';
 const awsDocPath = 'investigacion/Servicios_AWS_S03_borrador.md';
 const templatePath = 'metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx';
+const caseWorkbookPath = 'casos/S02_Caso_de_uso/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx';
+const caseDocPath = 'casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md';
 const metricsDiagramPath = 'investigacion/Diagrama_Metricas_Piloto_13.html';
 const readme = await readFile(at('README.md'), 'utf8');
 const activities = parsePlanning(readme);
 const templatePreview = await readExcelPreview(at(templatePath));
+const casePreview = await readExcelPreview(at(caseWorkbookPath));
 const planningPreview = await readExcelPreview(at('planificacion/Planificacion.xlsx'));
 if (templatePreview.sheets.map((sheet) => sheet.name).join('|') !== 'Guía de uso|F0|F1|F2|F3|Matriz') {
   throw new Error('La plantilla Excel no contiene las seis hojas esperadas.');
@@ -50,10 +53,13 @@ await Promise.all([
   writeFile(at('src/data/metricas-piloto.json'), JSON.stringify({ style: diagramStyle, markup: diagramMarkup, script: diagramScript }) + '\n'),
   copyFile(at(metricsDiagramPath), at('public/descargas/Diagrama_Metricas_Piloto_13.html')),
   writeFile(at('src/data/template-preview.json'), JSON.stringify(templatePreview) + '\n'),
+  writeFile(at('src/data/case-s02-preview.json'), JSON.stringify(casePreview) + '\n'),
   writeFile(at('src/data/planning-preview.json'), JSON.stringify(planningPreview) + '\n'),
   copyFile(at(methodologyPath), at('public/descargas/Marco_Trabajo_Datos_v1_4.md')),
   copyFile(at(awsDocPath), at('public/descargas/Servicios_AWS_S03_borrador.md')),
   copyFile(at(templatePath), at('public/descargas/Plantilla_Assessment_Datos_F0_F3.xlsx')),
+  copyFile(at(caseWorkbookPath), at('public/descargas/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx')),
+  copyFile(at(caseDocPath), at('public/descargas/Caso_S02_Recorrido_Metodologico.md')),
   copyFile(at('planificacion/Planificacion.xlsx'), at('public/descargas/Planificacion.xlsx'))
 ]);
 console.log(`Planificación sincronizada: ${activities.length} actividades, evidencias verificadas y descargas originales.`);

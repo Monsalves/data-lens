@@ -1,0 +1,26 @@
+---
+import '../../styles/custom.css';
+import SiteHeader from '../../components/SiteHeader.astro';
+import { Content } from '../../../casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md';
+const base = import.meta.env.BASE_URL;
+---
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Caso ficticio S02: de los dolores del cliente a la aplicación del marco F0–F3." />
+    <title>Caso S02 · Data Lens</title>
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+  </head>
+  <body>
+    <a class="skip-link" href="#contenido">Saltar al documento</a>
+    <SiteHeader />
+    <main id="contenido" class="document-layout">
+      <a class="back-link" href={base}>← Volver a planificación</a>
+      <div class="document-top"><div><span class="eyebrow">CASO ILUSTRATIVO / S02</span><h1>Banco Tinamú Digital</h1><p>Contexto, dolores y recorrido de aplicación del marco 1.4.</p></div><a class="download-link" href={`${base}descargas/Caso_S02_Recorrido_Metodologico.md`} download>Descargar Markdown ↓</a></div>
+      <p><a class="download-link" href={`${base}caso-s02/plantilla/`}>Ver la plantilla F0–F3 rellenada →</a></p>
+      <article class="document-content"><Content /></article>
+    </main>
+  </body>
+</html>

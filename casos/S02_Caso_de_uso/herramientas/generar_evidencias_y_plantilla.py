@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Genera las evidencias simuladas y la plantilla rellena del caso S02.
+"""Genera los datos simulados y la plantilla rellena del caso S02.
 
 Uso:  python generar_evidencias_y_plantilla.py
 Parte de la plantilla publicada (copia; el original no se modifica).
@@ -103,19 +103,6 @@ Tramos esperados ({TR_TOT}):
     # EV-07
     escribir_csv("catalogo_clasificacion.csv", ["id_activo", "activo", "clasificacion_registrada", "informado"],
                  [[f"A-{a['n']:02d}", a["nombre"], a["clasificacion"] or "", sn(bool(a["clasificacion"]))] for a in CATALOGO])
-    # EV-08
-    escribir_md("acta_solicitud_facturacion.md", f"""
-# EV-08 · Acta de la solicitud de facturación (documento simulado)
-
-- **Fecha:** 05-nov-2026 (simulada).
-- **Solicitud:** el equipo evaluador pide a Finanzas ({GONZALO}) y a Tecnología ({DANIELA}) el gasto mensual de AWS de los últimos 12 meses (nov-2025 a oct-2026),
-  desglosado por servicio y por producto o etiqueta, incluido lo asociado al modelo.
-- **Respuesta de Finanzas:** dispone de la factura mensual como documento, sin etiquetas de producto. No existe un reporte por producto.
-- **Respuesta de Tecnología:** la consola de facturación está reservada a Finanzas; no se concedió acceso al rol de evaluación en este ciclo.
-- **Qué se obtuvo:** nada que permita atribuir el gasto a un servicio o a un producto. Este acta no reproduce cifras de gasto.
-- **Consecuencia:** EXA-06 no puede interpretarse. Estado: «Sin evidencia suficiente». El gasto no se midió.
-- **Siguiente paso propuesto:** AC-05.
-""")
     # EV-09
     escribir_csv("ciclo_de_vida_por_bucket.csv", ["bucket", "tipo_de_dato", "politica_supuesta", "regla_configurada", "coherente_con_politica"],
                  [[b[0], b[1], b[2], b[3], sn(b[4])] for b in BUCKETS_F02])
@@ -156,18 +143,6 @@ Cobertura del inventario: {n(MUESTRA)} de {n(INV_OBJ)} objetos ({pct(MUESTRA, IN
     # EV-13
     escribir_csv("hallazgos_permisos_sin_uso.csv", ["id", "tipo", "rol_o_usuario", "dias_sin_uso", "se_relaciona_con_F-02"],
                  [[f"H-{i:02d}", h[0], h[1], h[2], sn(h[3])] for i, h in enumerate(HALLAZGOS, start=1)])
-    # EV-14
-    escribir_md("acta_acceso_auditoria.md", f"""
-# EV-14 · Acta de la solicitud de acceso a los registros de auditoría (documento simulado)
-
-- **Fecha:** 06-nov-2026 (simulada).
-- **Solicitud:** leer el contenido de una muestra de archivos de log del bucket `tnm-sim-auditoria-trail` para comprobar los campos obligatorios (quién, qué, sobre qué recurso, cuándo y con qué resultado).
-- **Respuesta de Seguridad ({NATALIA}):** el acceso al contenido de los logs está reservado a su equipo. La autorización para el rol de evaluación quedó pendiente de un comité interno posterior a la fecha de cierre de la revisión.
-- **Declarado por Seguridad, sin verificar:** la auditoría de la cuenta está activa.
-- **Qué se obtuvo:** ningún registro. No se calculó ninguna proporción.
-- **Consecuencia:** EXA-11 no es verificable. Estado: «No verificable». No se interpreta como favorable ni desfavorable.
-- **Siguiente paso propuesto:** AC-10.
-""")
     return sorted(os.listdir(EV_PATH))
 
 

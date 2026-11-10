@@ -4,8 +4,8 @@ import SiteHeader from './SiteHeader.astro';
 
 type PreviewCell = { text: string; bold: boolean; bg?: string; fg?: string; align?: string; colSpan?: number; rowSpan?: number };
 type Sheet = { name: string; rows: (PreviewCell | null)[][] };
-interface Props { title: string; description: string; file: string; sheets: Sheet[] }
-const { title, description, file, sheets } = Astro.props;
+interface Props { title: string; description: string; file: string; sheets: Sheet[]; backHref?: string; backLabel?: string }
+const { title, description, file, sheets, backHref, backLabel } = Astro.props;
 const base = import.meta.env.BASE_URL;
 const columnLabel = (index: number) => {
   let value = index + 1;
@@ -27,7 +27,7 @@ const columnLabel = (index: number) => {
     <a class="skip-link" href="#contenido">Saltar al documento</a>
     <SiteHeader />
     <main id="contenido" class="workbook-layout">
-      <a class="back-link" href={base}>← Volver a planificación</a>
+      <a class="back-link" href={backHref ?? base}>← {backLabel ?? 'Volver a planificación'}</a>
       <div class="document-top"><div><span class="eyebrow">DOCUMENTO / EXCEL</span><h1>{title}</h1><p>{description}</p></div><a class="download-link" href={`${base}descargas/${file}`} download>Descargar Excel original ↓</a></div>
       <div class="workbook-viewer">
         <div class="excel-sheet-tabs" role="tablist" aria-label={`Hojas de ${title}`}>

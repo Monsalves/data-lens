@@ -223,8 +223,6 @@ F2_EV = [
      "especificacion_flujo_modelo.md", "Diagrama de flujo de datos del modelo v0.3 (de Arquitectura, 26-oct-2026): lista de los 12 tramos esperados.", "04-nov-2026"),
     ("EV-07", "RES-05", "Revisión de fichas del catálogo, campo de clasificación (plan de medición M-26) · SIMULADO",
      "catalogo_clasificacion.csv", "40 filas: activo y clasificación registrada; marca de los vacíos.", "03-nov-2026"),
-    ("EV-08", "RES-06", "Solicitud documental a Finanzas y Tecnología · acta SIMULADA",
-     "acta_solicitud_facturacion.md", "Solicitud del desglose, respuesta recibida y razón por la que no se pudo examinar el gasto. No contiene cifras de gasto.", "05-nov-2026"),
     ("EV-09", "RES-07", "Lectura de reglas de ciclo de vida por bucket (plan de medición M-29) · SIMULADO",
      "ciclo_de_vida_por_bucket.csv", "7 buckets: tipo de dato, política, regla configurada y si es coherente.", "04-nov-2026"),
     ("EV-10", "RES-07", "Listado de versiones del bucket de clientes dados de baja (apoyo de M-29) · SIMULADO",
@@ -235,8 +233,6 @@ F2_EV = [
      "muestra_cifrado_objetos.md", "Por bucket: inventario, muestra, conformes y no conformes; lista de los 12 objetos no conformes.", "05-nov-2026"),
     ("EV-13", "RES-10", "Lista de hallazgos del analizador de acceso no utilizado (plan de medición M-21) · SIMULADO",
      "hallazgos_permisos_sin_uso.csv", "19 hallazgos: tipo, rol o usuario, días sin uso y si se relaciona con F-02.", "04-nov-2026"),
-    ("EV-14", "RES-11", "Solicitud de acceso al contenido de logs · acta SIMULADA",
-     "acta_acceso_auditoria.md", "Solicitud a Seguridad, respuesta y motivo de que el examen no sea verificable.", "06-nov-2026"),
 ]
 EV = {e[0]: e for e in F2_EV}
 
@@ -338,7 +334,7 @@ F3_AC = [
      "Alta · condición para lanzar",
      "RES-11 se repite con un estado distinto de «No verificable» y se evalúa la regla de ≥ 98 %.", "Propuesta"),
     ("AC-11", "DX-10",
-     "Presentar a la Gerencia General las condiciones de lanzamiento: lanzar el modelo solo cuando estén cerradas AC-02, AC-03, AC-07, AC-09 y AC-10, con fecha comprometida para AC-04, AC-06 y AC-08. "
+     "Presentar a la Gerencia General las condiciones de lanzamiento: cerrar AC-02, AC-03, AC-04, AC-06, AC-07, AC-08, AC-09 y AC-10 antes de lanzar el modelo. "
      "Si no se alcanzan antes del cierre del trimestre, decidir si se pospone el lanzamiento.",
      "Alta · decisión de la Gerencia General",
      "Acta de la Gerencia General con las condiciones, los responsables y las fechas.", "Propuesta"),
@@ -347,19 +343,20 @@ AC = {a[0]: a for a in F3_AC}
 
 
 def matriz():
-    """Una fila por camino sustentado: EV × DX × AC. Fuente tomada del REQ."""
+    """Una fila por camino; «—» en EV indica que falta el respaldo del examen."""
     req_f = {r[0]: r[1] for r in F0_REQ}
     filas = []
-    for ev in F2_EV:
-        res_id = ev[1]
+    for res_id in RES:
+        evidencias = [e[0] for e in F2_EV if e[1] == res_id] or ["—"]
         exa_id = RES[res_id][1]
         req_id = EXA[exa_id][1]
         f_id = req_f[req_id]
         dxs = [d for d in F3_DX if res_id in d[1]]
-        for d in dxs:
-            acs = [a for a in F3_AC if a[1] == d[0]]
-            if not acs:
-                filas.append((f_id, req_id, exa_id, res_id, ev[0], d[0], "—"))
-            for a in acs:
-                filas.append((f_id, req_id, exa_id, res_id, ev[0], d[0], a[0]))
+        for ev_id in evidencias:
+            for d in dxs:
+                acs = [a for a in F3_AC if a[1] == d[0]]
+                if not acs:
+                    filas.append((f_id, req_id, exa_id, res_id, ev_id, d[0], "—"))
+                for a in acs:
+                    filas.append((f_id, req_id, exa_id, res_id, ev_id, d[0], a[0]))
     return filas

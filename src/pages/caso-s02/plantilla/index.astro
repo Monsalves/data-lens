@@ -1,0 +1,7 @@
+---
+import '../../../styles/custom.css';
+import WorkbookPage from '../../../components/WorkbookPage.astro';
+import preview from '../../../data/case-s02-preview.json';
+const base = import.meta.env.BASE_URL;
+---
+<WorkbookPage title="Caso S02 · Plantilla F0–F3 rellenada" description="Aplicación ilustrativa del marco 1.4 al Banco Tinamú Digital. Todos los datos y resultados son ficticios." file="Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx" sheets={preview.sheets} backHref={`${base}caso-s02/`} backLabel="Volver al caso" />
