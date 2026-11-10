@@ -1,0 +1,42 @@
+# SIMULADO · Banco Tinamú Digital (ficticio) · Tabla de trabajo ilustrativa. No es salida de AWS ni evidencia ejecutada en una cuenta real.
+id_activo,activo,campo_responsable,informado
+A-01,tnm-sim-aurora-core,Tecnología,sí
+A-02,tnm-sim-aurora-originacion,Tecnología,sí
+A-03,tnm-sim-aurora-crm,Tecnología,sí
+A-04,tnm-sim-aurora-riesgo,,no
+A-05,originacion.solicitudes_curado,Riesgo de Crédito,sí
+A-06,originacion.solicitantes,Riesgo de Crédito,sí
+A-07,originacion.consultas_buro,Riesgo de Crédito,sí
+A-08,originacion.ofertas_historicas,,no
+A-09,originacion.decisiones_credito,Riesgo de Crédito,sí
+A-10,originacion.garantias,Riesgo de Crédito,sí
+A-11,originacion.productos_credito,Riesgo de Crédito,sí
+A-12,originacion.canales_captacion,Riesgo de Crédito,sí
+A-13,originacion.features_solicitante,Riesgo de Crédito,sí
+A-14,clientes.clientes_activos,Producto,sí
+A-15,clientes.cuentas,Producto,sí
+A-16,clientes.contactos,Producto,sí
+A-17,clientes.productos_contratados,Producto,sí
+A-18,clientes.bajas_clientes,,no
+A-19,clientes.segmentos,Producto,sí
+A-20,clientes.consentimientos,Producto,sí
+A-21,clientes.movimientos_resumen,Producto,sí
+A-22,clientes.transacciones_diarias,Producto,sí
+A-23,riesgo.scoring_historico,,no
+A-24,riesgo.ingresos_declarados,,no
+A-25,riesgo.mora_mensual,Riesgo de Crédito,sí
+A-26,riesgo.limites_credito,Riesgo de Crédito,sí
+A-27,riesgo.alertas_fraude,Riesgo de Crédito,sí
+A-28,riesgo.politicas_riesgo,Riesgo de Crédito,sí
+A-29,riesgo.cartera_resumen,Riesgo de Crédito,sí
+A-30,riesgo.indicadores_cartera,Riesgo de Crédito,sí
+A-31,tnm-sim-ddb-perfil-digital,Tecnología,sí
+A-32,tnm-sim-ddb-preferencias,,no
+A-33,tnm-sim-ddb-eventos-app,,no
+A-34,tnm-sim-ddb-limites-vigentes,Tecnología,sí
+A-35,tnm-sim-extractos-modelado-a,,no
+A-36,tnm-sim-solicitudes-raw,Datos e IA,sí
+A-37,tnm-sim-solicitudes-curado,Datos e IA,sí
+A-38,tnm-sim-decisiones-credito,Datos e IA,sí
+A-39,tnm-sim-contratos,Datos e IA,sí
+A-40,tnm-sim-lago-analitico-a,,no

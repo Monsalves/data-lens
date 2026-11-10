@@ -1,0 +1,14 @@
+# SIMULADO · Banco Tinamú Digital (ficticio) · Tabla de trabajo ilustrativa. No es salida de AWS ni evidencia ejecutada en una cuenta real.
+tramo,origen,destino,registrado_en_grafo
+T-01,tnm-sim-aurora-originacion,tnm-sim-solicitudes-raw,sí
+T-02,tnm-sim-aurora-crm,tnm-sim-solicitudes-raw,sí
+T-03,tnm-sim-aurora-core,tnm-sim-solicitudes-raw,no
+T-04,tnm-sim-solicitudes-raw,originacion.solicitudes_curado,sí
+T-05,originacion.solicitudes_curado,originacion.features_solicitante,sí
+T-06,tnm-sim-aurora-riesgo,riesgo.scoring_historico,no
+T-07,riesgo.scoring_historico,originacion.features_solicitante,sí
+T-08,riesgo.ingresos_declarados,originacion.features_solicitante,sí
+T-09,tnm-sim-lago-analitico-a,originacion.ofertas_historicas,no
+T-10,originacion.features_solicitante,tnm-sim-extractos-modelado-a,sí
+T-11,tnm-sim-extractos-modelado-a,tnm-sim-artefactos-modelo,sí
+T-12,tnm-sim-artefactos-modelo,modelo de preaprobación (destino),sí

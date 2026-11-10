@@ -1,0 +1,21 @@
+# SIMULADO · Banco Tinamú Digital (ficticio) · Tabla de trabajo ilustrativa. No es salida de AWS ni evidencia ejecutada en una cuenta real.
+id,tipo,rol_o_usuario,dias_sin_uso,se_relaciona_con_F-02
+H-01,Rol sin uso,tnm-sim-rol-etl-legado,212,sí
+H-02,Rol sin uso,tnm-sim-rol-analista-ext,147,sí
+H-03,Rol sin uso,tnm-sim-rol-pruebas-modelo,120,no
+H-04,Rol sin uso,tnm-sim-rol-migracion-2024,301,no
+H-05,Rol sin uso,tnm-sim-rol-reportes-riesgo,98,no
+H-06,Rol sin uso,tnm-sim-rol-soporte-temporal,133,no
+H-07,Clave de acceso sin uso,usr-sim-analista01,176,sí
+H-08,Clave de acceso sin uso,usr-sim-analista02,94,no
+H-09,Clave de acceso sin uso,usr-sim-integracion,260,no
+H-10,Clave de acceso sin uso,usr-sim-practicante03,118,no
+H-11,Permiso sin uso,tnm-sim-rol-etl-prep: permisos de Redshift,105,no
+H-12,Permiso sin uso,tnm-sim-rol-etl-prep: escritura en S3 de contratos,112,sí
+H-13,Permiso sin uso,tnm-sim-rol-features: permisos de DynamoDB,97,no
+H-14,Permiso sin uso,tnm-sim-rol-features: lectura de clientes-baja,91,sí
+H-15,Permiso sin uso,tnm-sim-rol-scoring: permisos de RDS,156,no
+H-16,Permiso sin uso,tnm-sim-rol-scoring: administración de claves KMS,189,sí
+H-17,Permiso sin uso,tnm-sim-rol-bi: lectura de extractos-modelado-b,129,sí
+H-18,Permiso sin uso,tnm-sim-rol-bi: permisos de Athena,142,no
+H-19,Permiso sin uso,tnm-sim-rol-soporte: permisos de CloudWatch,99,no

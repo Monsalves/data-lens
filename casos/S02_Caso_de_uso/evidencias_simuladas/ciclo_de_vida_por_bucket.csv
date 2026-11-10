@@ -1,0 +1,9 @@
+# SIMULADO · Banco Tinamú Digital (ficticio) · Tabla de trabajo ilustrativa. No es salida de AWS ni evidencia ejecutada en una cuenta real.
+bucket,tipo_de_dato,politica_supuesta,regla_configurada,coherente_con_politica
+tnm-sim-extractos-modelado-a,Extracción temporal para modelado,30 días,Expira a los 30 días,sí
+tnm-sim-extractos-modelado-b,Extracción temporal para modelado,30 días,Sin regla de ciclo de vida,no
+tnm-sim-solicitudes-raw,Solicitudes de crédito (zona de trabajo),12 meses,Expira a los 12 meses,sí
+tnm-sim-solicitudes-curado,Solicitudes de crédito (zona de trabajo),12 meses,Expira a los 12 meses,sí
+tnm-sim-clientes-baja,Datos personales de clientes dados de baja,24 meses,Sin regla de ciclo de vida,no
+tnm-sim-decisiones-credito,Decisiones de crédito,60 meses,Expira a los 60 meses,sí
+tnm-sim-contratos,Contratos,60 meses,Expira a los 60 meses,sí

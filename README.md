@@ -6,6 +6,7 @@ Marco de trabajo y planificación del proyecto.
 - **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md)
 - **Plantilla por fases:** [Excel F0–F3 y matriz](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx)
 - **Planificación:** [Planificacion.xlsx](planificacion/Planificacion.xlsx)
+- **Semana 2:** [Caso ilustrativo ficticio (contexto, plantilla rellena y evidencias simuladas)](casos/S02_Caso_de_uso/README.md)
 - **Semana 3:** [Mapa preliminar de servicios AWS](investigacion/Servicios_AWS_S03_borrador.md) · [Diagrama de las 13 métricas del piloto](investigacion/Diagrama_Metricas_Piloto_13.html)
 
 ## Actividades
@@ -13,7 +14,7 @@ Marco de trabajo y planificación del proyecto.
 | Semana | Fechas | Actividad | Entregable esperado | Estado | Documento de evidencia |
 | --- | --- | --- | --- | --- | --- |
 | S01 | 27 oct–03 nov 2026 | Diseñar y documentar la metodología general de assessment de la capa de datos. | Documento marco de trabajo. | 🟡 En progreso | [Marco de trabajo 1.4](metodologia/Marco_Trabajo_Datos_v1_4.md) · [Plantilla F0–F3](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx) |
-| S02 | 04–10 nov 2026 | Aplicar la metodología a un caso de uso. | Documento del caso de uso elaborado con el marco de trabajo. | 🟡 En progreso | — |
+| S02 | 04–10 nov 2026 | Aplicar la metodología a un caso de uso. | Documento del caso de uso elaborado con el marco de trabajo. | 🟡 En progreso | [Caso ilustrativo: documento de contexto](casos/S02_Caso_de_uso/Contexto_Caso_S02_Banco_Tinamu_Digital.md) · [Plantilla rellena del caso](casos/S02_Caso_de_uso/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx) |
 | S03 | 11–17 nov 2026 | Investigar y validar técnicamente los servicios AWS relevantes para evaluar la capa de datos. | Análisis de capacidades AWS y resultados de pruebas técnicas. | 🟡 En progreso | [Mapa preliminar de servicios](investigacion/Servicios_AWS_S03_borrador.md) · [Diagrama de las 13 métricas del piloto](investigacion/Diagrama_Metricas_Piloto_13.html) |
 | S04 | 18–24 nov 2026 | Comparar soluciones existentes, identificar oportunidades de reutilización y definir el enfoque del prototipo. | Análisis comparativo y propuesta técnica del prototipo. | ⚪ Pendiente | — |
 | S05 | 25 nov–01 dic 2026 | Desarrollar e integrar los componentes principales del prototipo con las capacidades técnicas previamente validadas. | Primera versión funcional del prototipo (MVP). | ⚪ Pendiente | — |

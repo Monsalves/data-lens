@@ -1,0 +1,9 @@
+# SIMULADO · Banco Tinamú Digital (ficticio) · Tabla de trabajo ilustrativa. No es salida de AWS ni evidencia ejecutada en una cuenta real.
+job,terminadas,exitosas,fallidas,canceladas_fuera_del_calculo,en_curso_fuera_del_calculo
+tnm-sim-prep-solicitudes,180,172,8,1,1
+tnm-sim-prep-clientes,90,85,5,1,1
+tnm-sim-prep-buro,90,80,10,1,0
+tnm-sim-features-solicitante,90,87,3,1,0
+tnm-sim-extracto-entrenamiento,30,27,3,1,0
+tnm-sim-carga-ofertas,60,57,3,0,1
+TOTAL,540,508,32,5,3
