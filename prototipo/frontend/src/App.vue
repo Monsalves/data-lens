@@ -1,5 +1,6 @@
 <script setup>
-import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, onBeforeUnmount, ref, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import metrics from './data/metrics.json'
 import { assets, databases, dataZoneAssets, populationFor } from './data/fixtures.js'
 import DatabaseMap from './components/DatabaseMap.vue'
@@ -42,6 +43,9 @@ function refreshDemoRun(run) {
 const accounts = ref(readStorage('dl.accounts', defaultAccounts))
 const active = ref('inicio')
 const drawer = ref(null)
+const { mdAndUp } = useDisplay()
+const sidebarMinimized = ref(false)
+const compactSidebar = computed(() => mdAndUp.value && sidebarMinimized.value)
 const search = ref('')
 const pillarFilter = ref('Todos')
 const serviceFilter = ref('Todos')
@@ -83,6 +87,12 @@ const inventoryViews = [
 ]
 const metricReturnLabel = computed(() => sections.find(section => section.id === returnSection.value).label)
 function closeTemporaryDrawer() { if (window.innerWidth < 960) drawer.value = false }
+async function expandCompactPillar(pillar, index) {
+  sidebarMinimized.value = false
+  openPillar.value = pillar
+  await nextTick()
+  document.getElementById(`pilot-pillar-toggle-${index}`)?.focus()
+}
 function navigate(id) { active.value = id; search.value = ''; pillarFilter.value = 'Todos'; serviceFilter.value = 'Todos'; closeTemporaryDrawer() }
 function showPostmanEvidence() { inventoryView.value = 'postman'; navigate('inventario') }
 function openMetric(metric) {
@@ -152,15 +162,35 @@ function dateTime(value) { return value ? new Intl.DateTimeFormat('es-CL', { dat
 
 <template>
   <v-app>
-    <v-navigation-drawer v-model="drawer" :permanent="$vuetify.display.mdAndUp" :temporary="$vuetify.display.smAndDown" width="252" class="side-nav">
+    <v-navigation-drawer id="pilot-sidebar" v-model="drawer" :permanent="mdAndUp" :temporary="!mdAndUp" :rail="compactSidebar" :rail-width="64" width="252" class="side-nav">
       <template #prepend>
-        <div class="brand-wrap"><div class="brand-icon"><v-icon icon="mdi-chart-arc" size="23" /></div><div><div class="brand-name">data lens<span>.</span></div><div class="brand-sub">AWS DATA INTELLIGENCE</div></div></div>
+        <div class="brand-wrap"><div class="brand-icon" :title="compactSidebar ? 'Data Lens' : undefined"><v-icon icon="mdi-chart-arc" size="23" /></div><div v-if="!compactSidebar"><div class="brand-name">data lens<span>.</span></div><div class="brand-sub">AWS DATA INTELLIGENCE</div></div></div>
       </template>
-      <nav v-if="selectedMetric" class="metric-rail" aria-label="Navegación de métricas">
+      <nav v-if="compactSidebar" class="compact-nav" :aria-label="selectedMetric ? 'Navegación de métricas' : 'Espacio de trabajo'">
+        <template v-if="selectedMetric">
+          <button type="button" class="compact-nav-button" :aria-label="`Volver a ${metricReturnLabel}`" @click="closeMetric">
+            <v-icon icon="mdi-arrow-left" size="20" />
+            <v-tooltip activator="parent" location="end" :text="`Volver a ${metricReturnLabel}`" />
+          </button>
+          <button v-for="({ pillar }, index) in metricGroups" :key="pillar" type="button" class="compact-nav-button"
+            :aria-current="selectedMetric.pillar === pillar ? 'true' : undefined" :aria-label="pillar" @click="expandCompactPillar(pillar, index)">
+            <v-icon :icon="icons[pillar]" size="20" />
+            <v-tooltip activator="parent" location="end" :text="pillar" />
+          </button>
+        </template>
+        <template v-else>
+          <button v-for="item in sections" :key="item.id" type="button" class="compact-nav-button"
+            :aria-current="active === item.id ? 'page' : undefined" :aria-label="item.label" @click="navigate(item.id)">
+            <v-icon :icon="item.icon" size="20" />
+            <v-tooltip activator="parent" location="end" :text="item.label" />
+          </button>
+        </template>
+      </nav>
+      <nav v-else-if="selectedMetric" class="metric-rail" aria-label="Navegación de métricas">
         <button type="button" class="metric-back" @click="closeMetric"><v-icon icon="mdi-arrow-left" size="18" /> Volver a {{ metricReturnLabel }}</button>
         <div class="metric-rail-title">MÉTRICAS DEL PILOTO <span>{{ metrics.length }}</span></div>
         <div v-for="({ pillar, items }, index) in metricGroups" :key="pillar" class="metric-rail-group">
-          <button type="button" class="metric-rail-pillar" :class="{ current: selectedMetric.pillar === pillar }"
+          <button :id="`pilot-pillar-toggle-${index}`" type="button" class="metric-rail-pillar" :class="{ current: selectedMetric.pillar === pillar }"
             :aria-expanded="openPillar === pillar" :aria-controls="`pilot-pillar-${index}`"
             :aria-label="`${pillar}, ${items.length} métricas${selectedMetric.pillar === pillar ? ', pilar de la métrica actual' : ''}`"
             @click="openPillar = openPillar === pillar ? null : pillar">
@@ -183,10 +213,19 @@ function dateTime(value) { return value ? new Intl.DateTimeFormat('es-CL', { dat
           <v-list-item v-for="item in sections" :key="item.id" :active="active === item.id" :prepend-icon="item.icon" :title="item.label" rounded="lg" @click="navigate(item.id)" />
         </v-list>
       </template>
-      <template #append><div class="nav-bottom"><div class="nav-system"><span class="pulse-dot" /> MODO DEMOSTRACIÓN</div><p>Simulación local. La prueba externa de Glue está en Inventario.</p><div class="nav-version">PILOTO 13 · V0.1</div></div></template>
+      <template #append><div v-if="!compactSidebar" class="nav-bottom"><div class="nav-system"><span class="pulse-dot" /> MODO DEMOSTRACIÓN</div><p>Simulación local. La prueba externa de Glue está en Inventario.</p><div class="nav-version">PILOTO 13 · V0.1</div></div></template>
     </v-navigation-drawer>
 
-    <v-app-bar flat height="72" class="top-bar"><v-app-bar-nav-icon v-if="$vuetify.display.smAndDown" :aria-label="selectedMetric ? 'Abrir navegación de métricas' : 'Abrir menú'" :aria-expanded="Boolean(drawer)" @click="drawer = !drawer" /><div class="top-context"><span class="top-breadcrumb">DATA LENS</span><v-icon icon="mdi-chevron-right" size="16" color="#a1aabc" /><span>{{ selectedMetric ? selectedMetric.dimension : pageTitles[active][0] }}</span></div><v-spacer /><div class="top-account"><v-icon icon="mdi-cloud-outline" size="17" /><span>{{ account?.name || 'Sin cuenta' }}</span><v-icon icon="mdi-chevron-down" size="15" /></div><div class="top-avatar">DL</div></v-app-bar>
+    <v-app-bar flat height="72" class="top-bar">
+      <button v-if="mdAndUp" type="button" class="sidebar-toggle" aria-controls="pilot-sidebar"
+        :aria-label="compactSidebar ? 'Ampliar menú lateral' : 'Minimizar menú lateral'"
+        :aria-expanded="!compactSidebar" @click="sidebarMinimized = !sidebarMinimized">
+        <v-icon :icon="compactSidebar ? 'mdi-chevron-double-right' : 'mdi-chevron-double-left'" size="20" />
+        <v-tooltip activator="parent" location="bottom" :text="compactSidebar ? 'Ampliar menú lateral' : 'Minimizar menú lateral'" />
+      </button>
+      <v-app-bar-nav-icon v-else :aria-label="selectedMetric ? 'Abrir navegación de métricas' : 'Abrir menú'" :aria-expanded="Boolean(drawer)" @click="drawer = !drawer" />
+      <div class="top-context"><span class="top-breadcrumb">DATA LENS</span><v-icon icon="mdi-chevron-right" size="16" color="#a1aabc" /><span>{{ selectedMetric ? selectedMetric.dimension : pageTitles[active][0] }}</span></div><v-spacer /><div class="top-account"><v-icon icon="mdi-cloud-outline" size="17" /><span>{{ account?.name || 'Sin cuenta' }}</span><v-icon icon="mdi-chevron-down" size="15" /></div><div class="top-avatar">DL</div>
+    </v-app-bar>
 
     <v-main class="main-area"><MetricDetail v-if="selectedMetric" :key="selectedMetric.id" :metric="selectedMetric" :metrics="metrics" :result="selectedResult" :display-value="formatValue(selectedMetric)" :run="lastRun" :return-label="metricReturnLabel" @select="openMetric" @back="closeMetric" /><div v-else class="page-wrap">
       <div class="demo-banner"><v-icon icon="mdi-information-outline" size="19" /><div><strong>Entorno de demostración</strong><span> Inventario de ejemplo y mediciones simuladas. Las respuestas compartidas desde Postman están separadas en Inventario.</span></div></div>
