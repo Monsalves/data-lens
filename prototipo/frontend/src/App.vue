@@ -16,6 +16,7 @@ const sections = [
 const icons = { Responsabilidad: 'mdi-account-key-outline', Visibilidad: 'mdi-eye-outline', Calidad: 'mdi-check-decagram-outline', 'Acceso y seguridad': 'mdi-shield-lock-outline', 'Cumplimiento y privacidad': 'mdi-file-lock-outline' }
 const colors = { Responsabilidad: '#6674f4', Visibilidad: '#0ca7bd', Calidad: '#18a781', 'Acceso y seguridad': '#e6a13c', 'Cumplimiento y privacidad': '#aa74d8' }
 const pillars = [...new Set(metrics.map(m => m.pillar))]
+const metricGroups = pillars.map(pillar => ({ pillar, items: metrics.filter(metric => metric.pillar === pillar) }))
 const defaultAccounts = [{ id: '111122223333', name: 'Cuenta de demostración', region: 'us-east-1', roleArn: '', mode: 'simulada', status: 'Demo local' }]
 const fixtureVersion = 3
 const appBase = import.meta.env.BASE_URL
@@ -48,6 +49,8 @@ const inventoryView = ref('mapa')
 const metricId = ref(metricFromPath())
 const returnSection = ref('mediciones')
 const selectedMetric = computed(() => metrics.find(m => m.id === metricId.value) || null)
+const openPillar = ref(null)
+watch(selectedMetric, metric => { openPillar.value = metric?.pillar ?? null }, { immediate: true })
 const accountDialog = ref(false)
 const accountForm = ref({ name: '', id: '', roleArn: '', externalId: '', region: 'us-east-1' })
 const notice = ref('')
@@ -156,12 +159,22 @@ function dateTime(value) { return value ? new Intl.DateTimeFormat('es-CL', { dat
       <nav v-if="selectedMetric" class="metric-rail" aria-label="Navegación de métricas">
         <button type="button" class="metric-back" @click="closeMetric"><v-icon icon="mdi-arrow-left" size="18" /> Volver a {{ metricReturnLabel }}</button>
         <div class="metric-rail-title">MÉTRICAS DEL PILOTO <span>{{ metrics.length }}</span></div>
-        <div v-for="pillar in pillars" :key="pillar" class="metric-rail-group">
-          <div class="metric-rail-pillar">{{ pillar }}</div>
-          <button v-for="item in metrics.filter(m => m.pillar === pillar)" :key="item.id" type="button" class="metric-rail-item" :class="{ active: item.id === selectedMetric.id }" :aria-current="item.id === selectedMetric.id ? 'page' : undefined" @click="openMetric(item.id)">
-            <span class="metric-rail-copy"><strong>{{ item.name }}</strong><small>{{ resultFor(item) ? `Calculada · ${formatValue(item)}` : 'Pendiente' }}</small></span>
-            <span class="metric-rail-dot" :class="resultFor(item) ? 'calculated' : 'pending'" />
+        <div v-for="({ pillar, items }, index) in metricGroups" :key="pillar" class="metric-rail-group">
+          <button type="button" class="metric-rail-pillar" :class="{ current: selectedMetric.pillar === pillar }"
+            :aria-expanded="openPillar === pillar" :aria-controls="`pilot-pillar-${index}`"
+            :aria-label="`${pillar}, ${items.length} métricas${selectedMetric.pillar === pillar ? ', pilar de la métrica actual' : ''}`"
+            @click="openPillar = openPillar === pillar ? null : pillar">
+            <v-icon :icon="icons[pillar]" size="17" aria-hidden="true" />
+            <span class="metric-rail-pillar-name">{{ pillar }}</span>
+            <span class="metric-rail-pillar-count" aria-hidden="true">{{ items.length }}</span>
+            <v-icon :icon="openPillar === pillar ? 'mdi-chevron-up' : 'mdi-chevron-down'" size="16" aria-hidden="true" />
           </button>
+          <div v-show="openPillar === pillar" :id="`pilot-pillar-${index}`" class="metric-rail-pillar-items">
+            <button v-for="item in items" :key="item.id" type="button" class="metric-rail-item" :class="{ active: item.id === selectedMetric.id }" :aria-current="item.id === selectedMetric.id ? 'page' : undefined" @click="openMetric(item.id)">
+              <span class="metric-rail-copy"><strong>{{ item.name }}</strong><small>{{ resultFor(item) ? `Calculada · ${formatValue(item)}` : 'Pendiente' }}</small></span>
+              <span class="metric-rail-dot" :class="resultFor(item) ? 'calculated' : 'pending'" />
+            </button>
+          </div>
         </div>
       </nav>
       <template v-else>
