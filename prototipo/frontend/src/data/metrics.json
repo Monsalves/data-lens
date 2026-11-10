@@ -1,0 +1,522 @@
+[
+  {
+    "id": "M-01",
+    "name": "Se identifica un responsable",
+    "pillar": "Responsabilidad",
+    "dimension": "Responsables",
+    "reference": "Inventario de activos y campo de responsable aprobado.",
+    "operations": [
+      {
+        "name": "GetAsset",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/assets/{identifier}",
+        "fields": [
+          "id",
+          "externalIdentifier",
+          "formsOutput[].content",
+          "formsOutput[].formName",
+          "formsOutput[].typeName"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetAsset.html"
+      },
+      {
+        "name": "GetFormType",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/form-types/{formTypeIdentifier}",
+        "fields": [
+          "model",
+          "name",
+          "revision",
+          "status"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetFormType.html"
+      }
+    ],
+    "formula": "responsables informados ÷ activos revisados",
+    "kind": "pct",
+    "num": 16,
+    "den": 20,
+    "unit": "%",
+    "num_desc": "16 activos con campo no vacío",
+    "den_desc": "20 activos del universo revisado",
+    "sample_value": 80,
+    "states": null
+  },
+  {
+    "id": "M-04",
+    "name": "Solicitudes y concesiones por estado",
+    "pillar": "Responsabilidad",
+    "dimension": "Políticas de uso",
+    "reference": "Dominio, periodo, estados y vínculos entre solicitud, suscripción y grant.",
+    "operations": [
+      {
+        "name": "ListSubscriptionRequests",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/subscription-requests?status={status}",
+        "fields": [
+          "items[].id",
+          "items[].status",
+          "items[].createdAt",
+          "items[].updatedAt",
+          "items[].reviewerId"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_ListSubscriptionRequests.html"
+      },
+      {
+        "name": "ListSubscriptions",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/subscriptions",
+        "fields": [
+          "items[].id",
+          "items[].status",
+          "items[].createdAt",
+          "items[].subscribedListing.id",
+          "items[].subscribedListing.name"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_ListSubscriptions.html"
+      },
+      {
+        "name": "ListSubscriptionGrants",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/subscription-grants",
+        "fields": [
+          "items[].id",
+          "items[].subscriptionId",
+          "items[].status",
+          "items[].assets[].assetId",
+          "items[].assets[].assetScope.status"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_ListSubscriptionGrants.html"
+      }
+    ],
+    "formula": "conteos por estado en la ventana",
+    "kind": "estados",
+    "num": 10,
+    "den": 0,
+    "unit": "solicitudes",
+    "num_desc": "10 solicitudes: 6 ACCEPTED, 2 REJECTED, 2 PENDING",
+    "den_desc": "grants: 5 ACTIVE + 1 FAILED sobre 6 aprobadas",
+    "sample_value": 10,
+    "states": {
+      "requests": {
+        "ACCEPTED": 6,
+        "REJECTED": 2,
+        "PENDING": 2
+      },
+      "grants": {
+        "ACTIVE": 5,
+        "FAILED": 1
+      }
+    }
+  },
+  {
+    "id": "M-07",
+    "name": "Completitud de metadatos requeridos",
+    "pillar": "Visibilidad",
+    "dimension": "Catálogo",
+    "reference": "Campos obligatorios por formulario y activos aplicables.",
+    "operations": [
+      {
+        "name": "GetFormType",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/form-types/{formTypeIdentifier}",
+        "fields": [
+          "model",
+          "name",
+          "revision",
+          "status"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetFormType.html"
+      },
+      {
+        "name": "GetAsset",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/assets/{identifier}",
+        "fields": [
+          "id",
+          "externalIdentifier",
+          "formsOutput[].content",
+          "formsOutput[].formName",
+          "formsOutput[].typeName"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetAsset.html"
+      }
+    ],
+    "formula": "pares activo-campo informados ÷ pares aplicables",
+    "kind": "pct",
+    "num": 90,
+    "den": 100,
+    "unit": "%",
+    "num_desc": "90 pares con valor no vacío",
+    "den_desc": "100 pares (20 activos × 5 campos)",
+    "sample_value": 90,
+    "states": null
+  },
+  {
+    "id": "M-09",
+    "name": "Cobertura de tramos esperados de linaje",
+    "pillar": "Visibilidad",
+    "dimension": "Linaje",
+    "reference": "Pares origen → destino del flujo, definidos y validados por su equipo responsable para el alcance evaluado.",
+    "operations": [
+      {
+        "name": "GetLineageNode",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/lineage/nodes/{identifier}",
+        "fields": [
+          "id",
+          "sourceIdentifier",
+          "upstreamNodes[].id",
+          "downstreamNodes[].id",
+          "eventTimestamp"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetLineageNode.html"
+      }
+    ],
+    "formula": "tramos de la referencia encontrados ÷ tramos de la referencia",
+    "kind": "pct",
+    "num": 8,
+    "den": 10,
+    "unit": "%",
+    "num_desc": "8 coincidencias en la consulta simulada",
+    "den_desc": "10 tramos del diseño ficticio",
+    "sample_value": 80,
+    "states": null
+  },
+  {
+    "id": "M-11",
+    "name": "Nulos y ausentes de valores requeridos",
+    "pillar": "Calidad",
+    "dimension": "Reglas de calidad",
+    "reference": "Regla DQDL, campo obligatorio y filas aplicables.",
+    "operations": [
+      {
+        "name": "GetDataQualityRuleset",
+        "service": "AWS Glue",
+        "method": "POST",
+        "endpoint": "https://glue.{region}.amazonaws.com/; X-Amz-Target: AWSGlue.GetDataQualityRuleset",
+        "fields": [
+          "Ruleset",
+          "TargetTable",
+          "CreatedOn",
+          "LastModifiedOn",
+          "Name"
+        ],
+        "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityRuleset.html"
+      },
+      {
+        "name": "GetDataQualityResult",
+        "service": "AWS Glue",
+        "method": "POST",
+        "endpoint": "https://glue.{region}.amazonaws.com/; X-Amz-Target: AWSGlue.GetDataQualityResult",
+        "fields": [
+          "AggregatedMetrics.TotalRowsProcessed",
+          "AggregatedMetrics.TotalRowsPassed",
+          "AggregatedMetrics.TotalRowsFailed",
+          "AggregatedMetrics.TotalRulesProcessed",
+          "AggregatedMetrics.TotalRulesPassed"
+        ],
+        "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityResult.html"
+      }
+    ],
+    "formula": "valores faltantes ÷ obligatorios aplicables",
+    "kind": "pct",
+    "num": 10,
+    "den": 100,
+    "unit": "%",
+    "num_desc": "10 cliente_id ausentes",
+    "den_desc": "100 valores obligatorios",
+    "sample_value": 10,
+    "states": null
+  },
+  {
+    "id": "M-16",
+    "name": "Éxito de ejecuciones",
+    "pillar": "Calidad",
+    "dimension": "Pipelines",
+    "reference": "Periodo, estados terminales y tratamiento de reintentos.",
+    "operations": [
+      {
+        "name": "GetJobRuns",
+        "service": "AWS Glue",
+        "method": "POST",
+        "endpoint": "https://glue.{region}.amazonaws.com/; X-Amz-Target: AWSGlue.GetJobRuns",
+        "fields": [
+          "NextToken",
+          "JobRuns[].JobRunState",
+          "JobRuns[].StartedOn",
+          "JobRuns[].CompletedOn",
+          "JobRuns[].ExecutionTime"
+        ],
+        "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetJobRuns.html"
+      }
+    ],
+    "formula": "terminales exitosas ÷ terminales de la cohorte",
+    "kind": "pct",
+    "num": 18,
+    "den": 20,
+    "unit": "%",
+    "num_desc": "18 SUCCEEDED",
+    "den_desc": "20 terminales (18+2); 3 RUNNING fuera del denominador",
+    "sample_value": 90,
+    "states": null
+  },
+  {
+    "id": "M-18",
+    "name": "Cobertura de controles de salida",
+    "pillar": "Calidad",
+    "dimension": "Curación",
+    "reference": "Lista de controles de salida planificados y aplicables.",
+    "operations": [
+      {
+        "name": "GetDataQualityRuleset",
+        "service": "AWS Glue",
+        "method": "POST",
+        "endpoint": "https://glue.{region}.amazonaws.com/; X-Amz-Target: AWSGlue.GetDataQualityRuleset",
+        "fields": [
+          "Ruleset",
+          "TargetTable",
+          "CreatedOn",
+          "LastModifiedOn",
+          "Name"
+        ],
+        "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityRuleset.html"
+      },
+      {
+        "name": "GetDataQualityResult",
+        "service": "AWS Glue",
+        "method": "POST",
+        "endpoint": "https://glue.{region}.amazonaws.com/; X-Amz-Target: AWSGlue.GetDataQualityResult",
+        "fields": [
+          "AggregatedMetrics.TotalRowsProcessed",
+          "AggregatedMetrics.TotalRowsPassed",
+          "AggregatedMetrics.TotalRowsFailed",
+          "AggregatedMetrics.TotalRulesProcessed",
+          "AggregatedMetrics.TotalRulesPassed"
+        ],
+        "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityResult.html"
+      }
+    ],
+    "formula": "controles con resultado verificable ÷ planificados",
+    "kind": "pct",
+    "num": 8,
+    "den": 10,
+    "unit": "%",
+    "num_desc": "8 evaluados (6 PASS, 2 FAIL)",
+    "den_desc": "10 controles planificados",
+    "sample_value": 80,
+    "states": null
+  },
+  {
+    "id": "M-21",
+    "name": "Hallazgos de permisos no utilizados",
+    "pillar": "Acceso y seguridad",
+    "dimension": "Acceso mínimo",
+    "reference": "Analyzer de acceso no utilizado, estado y ventana observada.",
+    "operations": [
+      {
+        "name": "ListFindingsV2",
+        "service": "IAM Access Analyzer",
+        "method": "POST",
+        "endpoint": "https://access-analyzer.{region}.amazonaws.com/findingv2",
+        "fields": [
+          "findings[].findingType",
+          "findings[].status",
+          "findings[].resource",
+          "findings[].resourceType",
+          "findings[].createdAt"
+        ],
+        "docs": "https://docs.aws.amazon.com/access-analyzer/latest/APIReference/API_ListFindingsV2.html"
+      }
+    ],
+    "formula": "findings de uso no utilizado en la ventana",
+    "kind": "count",
+    "num": 8,
+    "den": 0,
+    "unit": "hallazgos",
+    "num_desc": "8 UNUSED_PERMISSION activos",
+    "den_desc": "ventana de 90 días",
+    "sample_value": 8,
+    "states": null
+  },
+  {
+    "id": "M-22",
+    "name": "Cifrado conforme de objetos o versiones",
+    "pillar": "Acceso y seguridad",
+    "dimension": "Protección",
+    "reference": "Cohorte de objetos o versiones y cifrado/clave exigidos.",
+    "operations": [
+      {
+        "name": "HeadObject",
+        "service": "Amazon S3",
+        "method": "HEAD",
+        "endpoint": "https://{bucket}.s3.{region}.amazonaws.com/{Key+}",
+        "fields": [
+          "x-amz-server-side-encryption",
+          "x-amz-server-side-encryption-aws-kms-key-id",
+          "x-amz-server-side-encryption-bucket-key-enabled",
+          "x-amz-version-id",
+          "x-amz-object-lock-mode"
+        ],
+        "docs": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html"
+      }
+    ],
+    "formula": "versiones con cifrado conforme ÷ revisadas",
+    "kind": "pct",
+    "num": 90,
+    "den": 100,
+    "unit": "%",
+    "num_desc": "90 con SSE-KMS exigido",
+    "den_desc": "100 versiones con estado verificable",
+    "sample_value": 90,
+    "states": null
+  },
+  {
+    "id": "M-25",
+    "name": "Completitud de registros de auditoría",
+    "pillar": "Acceso y seguridad",
+    "dimension": "Auditoría",
+    "reference": "Lote de logs y campos obligatorios por tipo de evento.",
+    "operations": [
+      {
+        "name": "GetObject",
+        "service": "Amazon S3",
+        "method": "GET",
+        "endpoint": "https://{bucket}.s3.{region}.amazonaws.com/{Key+}",
+        "fields": [
+          "Body",
+          "ContentType",
+          "ContentLength",
+          "VersionId"
+        ],
+        "docs": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetObject.html"
+      }
+    ],
+    "formula": "registros con campos obligatorios ÷ examinados",
+    "kind": "pct",
+    "num": 95,
+    "den": 100,
+    "unit": "%",
+    "num_desc": "95 registros completos",
+    "den_desc": "100 registros examinados",
+    "sample_value": 95,
+    "states": null
+  },
+  {
+    "id": "M-26",
+    "name": "Cobertura de clasificación",
+    "pillar": "Cumplimiento y privacidad",
+    "dimension": "Sensibles",
+    "reference": "Activos elegibles, campo de clasificación y vigencia acordada.",
+    "operations": [
+      {
+        "name": "GetAsset",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/assets/{identifier}",
+        "fields": [
+          "id",
+          "externalIdentifier",
+          "formsOutput[].content",
+          "formsOutput[].formName",
+          "formsOutput[].typeName"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetAsset.html"
+      },
+      {
+        "name": "GetFormType",
+        "service": "Amazon DataZone",
+        "method": "GET",
+        "endpoint": "https://datazone.{region}.api.aws/v2/domains/{domainIdentifier}/form-types/{formTypeIdentifier}",
+        "fields": [
+          "model",
+          "name",
+          "revision",
+          "status"
+        ],
+        "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetFormType.html"
+      }
+    ],
+    "formula": "activos con clasificación vigente ÷ elegibles",
+    "kind": "pct",
+    "num": 40,
+    "den": 50,
+    "unit": "%",
+    "num_desc": "40 con clasificación vigente registrada",
+    "den_desc": "50 activos elegibles",
+    "sample_value": 80,
+    "states": null
+  },
+  {
+    "id": "M-27",
+    "name": "Casos infractores con acción esperada",
+    "pillar": "Cumplimiento y privacidad",
+    "dimension": "Privacidad E/S",
+    "reference": "Corpus sintético etiquetado y acción esperada por caso.",
+    "operations": [
+      {
+        "name": "ApplyGuardrail",
+        "service": "Amazon Bedrock Runtime",
+        "method": "POST",
+        "endpoint": "https://bedrock-runtime.{region}.amazonaws.com/guardrail/{guardrailIdentifier}/version/{guardrailVersion}/apply",
+        "fields": [
+          "action",
+          "actionReason",
+          "assessments[].appliedGuardrailDetails.guardrailVersion",
+          "assessments[].contentPolicy.filters[].{action,confidence,detected,filterStrength,type}",
+          "assessments[].sensitiveInformationPolicy.piiEntities[].{action,detected,type}"
+        ],
+        "docs": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html"
+      }
+    ],
+    "formula": "infractores con acción esperada ÷ ejecutados",
+    "kind": "pct",
+    "num": 18,
+    "den": 20,
+    "unit": "%",
+    "num_desc": "18 bloqueados/enmascarados",
+    "den_desc": "20 casos etiquetados",
+    "sample_value": 90,
+    "states": null
+  },
+  {
+    "id": "M-29",
+    "name": "Reglas de conservación conformes con política",
+    "pillar": "Cumplimiento y privacidad",
+    "dimension": "Retención",
+    "reference": "Buckets sujetos y política de conservación para objetos actuales.",
+    "operations": [
+      {
+        "name": "GetBucketLifecycleConfiguration",
+        "service": "Amazon S3",
+        "method": "GET",
+        "endpoint": "https://{bucket}.s3.{region}.amazonaws.com/?lifecycle",
+        "fields": [
+          "Rules[].ID",
+          "Rules[].Status",
+          "Rules[].Filter",
+          "Rules[].Expiration",
+          "Rules[].NoncurrentVersionExpiration"
+        ],
+        "docs": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html"
+      }
+    ],
+    "formula": "activos con configuración coherente ÷ sujetos a política",
+    "kind": "pct",
+    "num": 8,
+    "den": 10,
+    "unit": "%",
+    "num_desc": "8 coherentes con 30 días",
+    "den_desc": "10 activos sujetos",
+    "sample_value": 80,
+    "states": null
+  }
+]

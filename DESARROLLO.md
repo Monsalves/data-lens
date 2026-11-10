@@ -8,6 +8,7 @@ La portada `/data-lens/` y `/data-lens/planificacion/` muestran el tablero. `/da
 
 ```bash
 npm ci
+npm ci --prefix prototipo/frontend
 npm run dev
 ```
 
@@ -20,7 +21,7 @@ npm run build
 npm run preview
 ```
 
-`dist/` es el sitio generado. No se versiona. `npm run preview` permite revisarlo después de compilar.
+`dist/` es el sitio generado. `npm run build` agrega el frontend Vue en `/data-lens/piloto/` y genera una página de entrada para cada métrica. `npm run preview` permite revisar el portal y la demo después de compilar.
 
 ## Actualizar el contenido
 
@@ -38,4 +39,4 @@ El servidor de desarrollo vuelve a sincronizar las fuentes al iniciarse. Tras ed
 
 La configuración corresponde a `https://monsalves.github.io/data-lens/`, con base `/data-lens`. En Settings → Pages, seleccionar GitHub Actions. El workflow valida, compila y publica cada cambio de `main`; en pull requests solo valida y compila.
 
-La web publica solo los documentos que ya forman parte de este repositorio. La ruta antigua de metodología ahora muestra la guía dentro del sitio; `/entregables/` vuelve a la portada. El resto de investigaciones, mockups y antecedentes permanecen fuera.
+El portal ofrece el enlace **Demo del piloto** en el menú. El código está en `prototipo/frontend/`. La demo usa mediciones simuladas y muestra dos extractos de descubrimiento de Glue reportados desde Postman. La ruta antigua de metodología muestra la guía dentro del sitio y `/entregables/` vuelve a la portada.

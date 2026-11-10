@@ -18,8 +18,8 @@ test('rechaza fechas y estados que producirían un cronograma incorrecto', () =>
 test('conserva actividades, estados y evidencia del README sin fijar el avance futuro', async () => {
   const markdown = await readFile(new URL('../README.md', import.meta.url), 'utf8');
   const rows = parsePlanning(markdown);
-  assert.equal(rows.length, 14);
   const sourceRows = markdown.split('\n').filter((line) => /^\| S\d+ \|/.test(line));
+  assert.equal(rows.length, sourceRows.length);
   for (const [index, row] of rows.entries()) {
     assert.ok(sourceRows[index].includes(row.activity));
     assert.ok(sourceRows[index].includes(row.deliverable));
@@ -27,6 +27,11 @@ test('conserva actividades, estados y evidencia del README sin fijar el avance f
   }
   assert.equal(rows.at(-1).end, '2027-02-02');
   assert.match(rows.find((row) => row.week === 'S08').deliverable, /18 dic/);
+  const weekTwo = rows.filter((row) => row.week === 'S02');
+  assert.equal(weekTwo.length, 2);
+  assert.equal(weekTwo[0].evidence[0].url, 'https://github.com/Monsalves/data-lens/blob/main/casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md');
+  assert.match(weekTwo[1].activity, /Diseñar mockups/);
+  assert.equal(weekTwo[1].evidence[0].url, 'https://github.com/Monsalves/data-lens/blob/main/prototipo/frontend/README.md');
   assert.deepEqual(rows[0].evidence, [
     { label: 'Marco de trabajo 1.4', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Marco_Trabajo_Datos_v1_4.md' },
     { label: 'Plantilla F0–F3', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx' }

@@ -49,8 +49,9 @@ export function parsePlanning(markdown) {
     const cells = line.trim().slice(1, -1).split(/(?<!\\)\|/u).map((cell) => cell.trim().replaceAll('\\|', '|'));
     if (cells.length !== 6) throw new Error(`La actividad requiere seis columnas: ${line}`);
     const [week, dates, activity, deliverable, rawStatus, rawEvidence] = cells;
-    if (seen.has(week)) throw new Error(`Semana duplicada: ${week}`);
-    seen.add(week);
+    const activityKey = `${week}:${activity}`;
+    if (seen.has(activityKey)) throw new Error(`Actividad duplicada en ${week}: ${activity}`);
+    seen.add(activityKey);
     const statusKey = /en progreso|en curso/iu.test(rawStatus) ? 'progress'
       : /bloquead/iu.test(rawStatus) ? 'blocked'
       : /pendiente/iu.test(rawStatus) ? 'pending'
