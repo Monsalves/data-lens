@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, copyFile, realpath, stat, rm } from 'node:fs/promises';
+import { readFile, writeFile, mkdir, copyFile, cp, realpath, stat, rm } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { resolve, relative, isAbsolute } from 'node:path';
 import { parsePlanning, evidencePath } from './planning.mjs';
@@ -12,6 +12,7 @@ const templatePath = 'metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx';
 const caseWorkbookPath = 'casos/S02_Caso_de_uso/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx';
 const caseDocPath = 'casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md';
 const metricsDiagramPath = 'investigacion/Diagrama_Metricas_Piloto_13.html';
+const comparisonFile = 'Comparacion_Soluciones_Existentes_S04.md';
 const readme = await readFile(at('README.md'), 'utf8');
 const activities = parsePlanning(readme);
 const templatePreview = await readExcelPreview(at(templatePath));
@@ -57,6 +58,8 @@ await Promise.all([
   writeFile(at('src/data/planning-preview.json'), JSON.stringify(planningPreview) + '\n'),
   copyFile(at(methodologyPath), at('public/descargas/Marco_Trabajo_Datos_v1_4.md')),
   copyFile(at(awsDocPath), at('public/descargas/Servicios_AWS_S03_borrador.md')),
+  copyFile(at(`investigacion/${comparisonFile}`), at(`public/descargas/${comparisonFile}`)),
+  cp(at('investigacion/S04_evidencia_visual'), at('public/descargas/S04_evidencia_visual'), { recursive: true }),
   copyFile(at(templatePath), at('public/descargas/Plantilla_Assessment_Datos_F0_F3.xlsx')),
   copyFile(at(caseWorkbookPath), at('public/descargas/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx')),
   copyFile(at(caseDocPath), at('public/descargas/Caso_S02_Recorrido_Metodologico.md')),
