@@ -40,7 +40,7 @@ function refreshDemoRun(run) {
 }
 const accounts = ref(readStorage('dl.accounts', defaultAccounts))
 const active = ref('inicio')
-const drawer = ref(true)
+const drawer = ref(null)
 const search = ref('')
 const pillarFilter = ref('Todos')
 const serviceFilter = ref('Todos')
@@ -79,10 +79,25 @@ const inventoryViews = [
   { id: 'postman', label: 'Validación Postman', icon: 'mdi-clipboard-check-outline' },
 ]
 const metricReturnLabel = computed(() => sections.find(section => section.id === returnSection.value).label)
-function navigate(id) { active.value = id; search.value = ''; pillarFilter.value = 'Todos'; serviceFilter.value = 'Todos'; if (window.innerWidth < 960) drawer.value = false }
+function closeTemporaryDrawer() { if (window.innerWidth < 960) drawer.value = false }
+function navigate(id) { active.value = id; search.value = ''; pillarFilter.value = 'Todos'; serviceFilter.value = 'Todos'; closeTemporaryDrawer() }
 function showPostmanEvidence() { inventoryView.value = 'postman'; navigate('inventario') }
-function openMetric(metric) { const id = typeof metric === 'string' ? metric : metric.id; if (!metrics.some(m => m.id === id)) return; if (!selectedMetric.value) returnSection.value = active.value; metricId.value = id; window.history.pushState({}, '', `${appBase}metricas/${id}/`); window.scrollTo(0, 0) }
-function closeMetric() { metricId.value = ''; active.value = returnSection.value; window.history.pushState({}, '', appBase); window.scrollTo(0, 0) }
+function openMetric(metric) {
+  const id = typeof metric === 'string' ? metric : metric.id
+  if (!metrics.some(m => m.id === id)) return
+  if (!selectedMetric.value) returnSection.value = active.value
+  metricId.value = id
+  closeTemporaryDrawer()
+  window.history.pushState({}, '', `${appBase}metricas/${id}/`)
+  window.scrollTo(0, 0)
+}
+function closeMetric() {
+  metricId.value = ''
+  active.value = returnSection.value
+  closeTemporaryDrawer()
+  window.history.pushState({}, '', appBase)
+  window.scrollTo(0, 0)
+}
 function resultFor(metric) { return resultMap.value[metric.id] }
 function formatValue(metric) {
   const result = resultFor(metric)
@@ -134,18 +149,34 @@ function dateTime(value) { return value ? new Intl.DateTimeFormat('es-CL', { dat
 
 <template>
   <v-app>
-    <v-navigation-drawer v-if="!selectedMetric" v-model="drawer" :permanent="$vuetify.display.mdAndUp" :temporary="$vuetify.display.smAndDown" width="252" class="side-nav" theme="dark">
-      <div class="brand-wrap"><div class="brand-icon"><v-icon icon="mdi-chart-arc" size="23" /></div><div><div class="brand-name">data lens<span>.</span></div><div class="brand-sub">AWS DATA INTELLIGENCE</div></div></div>
-      <div class="nav-caption">ESPACIO DE TRABAJO</div>
-      <v-list nav density="comfortable" class="nav-list">
-        <v-list-item v-for="item in sections" :key="item.id" :active="active === item.id" :prepend-icon="item.icon" :title="item.label" rounded="lg" @click="navigate(item.id)" />
-      </v-list>
+    <v-navigation-drawer v-model="drawer" :permanent="$vuetify.display.mdAndUp" :temporary="$vuetify.display.smAndDown" width="252" class="side-nav" theme="dark">
+      <template #prepend>
+        <div class="brand-wrap"><div class="brand-icon"><v-icon icon="mdi-chart-arc" size="23" /></div><div><div class="brand-name">data lens<span>.</span></div><div class="brand-sub">AWS DATA INTELLIGENCE</div></div></div>
+      </template>
+      <nav v-if="selectedMetric" class="metric-rail" aria-label="Navegación de métricas">
+        <button type="button" class="metric-back" @click="closeMetric"><v-icon icon="mdi-arrow-left" size="18" /> Volver a {{ metricReturnLabel }}</button>
+        <div class="metric-rail-title">MÉTRICAS DEL PILOTO <span>{{ metrics.length }}</span></div>
+        <div v-for="pillar in pillars" :key="pillar" class="metric-rail-group">
+          <div class="metric-rail-pillar">{{ pillar }}</div>
+          <button v-for="item in metrics.filter(m => m.pillar === pillar)" :key="item.id" type="button" class="metric-rail-item" :class="{ active: item.id === selectedMetric.id }" :aria-current="item.id === selectedMetric.id ? 'page' : undefined" @click="openMetric(item.id)">
+            <span class="metric-rail-id">{{ item.id }}</span>
+            <span class="metric-rail-copy"><strong>{{ item.dimension }}</strong><small>{{ resultFor(item) ? `Calculada · ${formatValue(item)}` : 'Pendiente' }}</small></span>
+            <span class="metric-rail-dot" :class="resultFor(item) ? 'calculated' : 'pending'" />
+          </button>
+        </div>
+      </nav>
+      <template v-else>
+        <div class="nav-caption">ESPACIO DE TRABAJO</div>
+        <v-list nav density="comfortable" class="nav-list">
+          <v-list-item v-for="item in sections" :key="item.id" :active="active === item.id" :prepend-icon="item.icon" :title="item.label" rounded="lg" @click="navigate(item.id)" />
+        </v-list>
+      </template>
       <template #append><div class="nav-bottom"><div class="nav-system"><span class="pulse-dot" /> MODO DEMOSTRACIÓN</div><p>Simulación local. La prueba externa de Glue está en Inventario.</p><div class="nav-version">PILOTO 13 · V0.1</div></div></template>
     </v-navigation-drawer>
 
-    <v-app-bar flat height="72" class="top-bar"><v-app-bar-nav-icon v-if="!selectedMetric && $vuetify.display.smAndDown" @click="drawer = !drawer" /><div class="top-context"><span class="top-breadcrumb">DATA LENS</span><v-icon icon="mdi-chevron-right" size="16" color="#a1aabc" /><span>{{ selectedMetric ? `${selectedMetric.id} · ${selectedMetric.dimension}` : pageTitles[active][0] }}</span></div><v-spacer /><div class="top-account"><v-icon icon="mdi-cloud-outline" size="17" /><span>{{ account?.name || 'Sin cuenta' }}</span><v-icon icon="mdi-chevron-down" size="15" /></div><div class="top-avatar">DL</div></v-app-bar>
+    <v-app-bar flat height="72" class="top-bar"><v-app-bar-nav-icon v-if="$vuetify.display.smAndDown" :aria-label="selectedMetric ? 'Abrir navegación de métricas' : 'Abrir menú'" :aria-expanded="Boolean(drawer)" @click="drawer = !drawer" /><div class="top-context"><span class="top-breadcrumb">DATA LENS</span><v-icon icon="mdi-chevron-right" size="16" color="#a1aabc" /><span>{{ selectedMetric ? `${selectedMetric.id} · ${selectedMetric.dimension}` : pageTitles[active][0] }}</span></div><v-spacer /><div class="top-account"><v-icon icon="mdi-cloud-outline" size="17" /><span>{{ account?.name || 'Sin cuenta' }}</span><v-icon icon="mdi-chevron-down" size="15" /></div><div class="top-avatar">DL</div></v-app-bar>
 
-    <v-main class="main-area"><MetricDetail v-if="selectedMetric" :key="selectedMetric.id" :metric="selectedMetric" :metrics="metrics" :result="selectedResult" :result-map="resultMap" :run="lastRun" :return-label="metricReturnLabel" @select="openMetric" @back="closeMetric" /><div v-else class="page-wrap">
+    <v-main class="main-area"><MetricDetail v-if="selectedMetric" :key="selectedMetric.id" :metric="selectedMetric" :metrics="metrics" :result="selectedResult" :display-value="formatValue(selectedMetric)" :run="lastRun" :return-label="metricReturnLabel" @select="openMetric" @back="closeMetric" /><div v-else class="page-wrap">
       <div class="demo-banner"><v-icon icon="mdi-information-outline" size="19" /><div><strong>Entorno de demostración</strong><span> Inventario de ejemplo y mediciones simuladas. Las respuestas compartidas desde Postman están separadas en Inventario.</span></div></div>
       <div class="page-heading"><div><div class="eyebrow">PILOTO TÉCNICO / 13 DIMENSIONES</div><h1>{{ pageTitles[active][0] }}</h1><p>{{ pageTitles[active][1] }}</p></div><div class="heading-actions"><v-btn v-if="active === 'cuentas'" color="primary" prepend-icon="mdi-plus" rounded="lg" @click="accountDialog = true">Agregar cuenta</v-btn><v-btn v-else-if="active === 'mediciones' && lastRun" variant="outlined" prepend-icon="mdi-download-outline" rounded="lg" @click="downloadResults">Exportar JSON</v-btn><v-btn v-else-if="active !== 'ejecuciones'" color="primary" prepend-icon="mdi-play" rounded="lg" :disabled="!!currentRun" @click="startSimulation">Simular medición</v-btn></div></div>
 
