@@ -69,8 +69,7 @@ export const glueDemoJob = {
 export const otherAssets = [
   ...databases.map(db => ({ id: `glue-db-${db.id}`, name: db.name, title: db.title, service: 'Glue', kind: 'Base de datos', region: 'us-east-1', owner: db.owner, state: 'Ejemplo' })),
   glueDemoJob,
-  { id: 's3-bucket-001', name: demoBuckets[0], title: 'Entrada de pedidos', service: 'S3', kind: 'Bucket', region: 'us-east-1', owner: 'Ingeniería de Datos', state: 'Ejemplo' },
-  { id: 's3-bucket-002', name: demoBuckets[1], title: 'Ventas procesadas', service: 'S3', kind: 'Bucket', region: 'us-east-1', owner: 'Equipo BI', state: 'Ejemplo' },
+  ...demoBuckets.map((name, index) => ({ id: `s3-bucket-${String(index + 1).padStart(3, '0')}`, name, title: ['Entrada de pedidos', 'Ventas procesadas'][index] || name, service: 'S3', kind: 'Bucket', region: 'us-east-1', owner: index === 1 ? 'Equipo BI' : 'Ingeniería de Datos', state: 'Ejemplo' })),
   { id: 'iam-analyzer-001', name: 'tienda-accesos-sin-uso', title: 'Accesos sin uso de la tienda', service: 'IAM Access Analyzer', kind: 'Analizador', region: 'us-east-1', owner: 'Seguridad', state: 'Ejemplo' },
   { id: 'bedrock-guardrail-001', name: 'proteccion-datos-asistente-pedidos', title: 'Privacidad del asistente de pedidos', service: 'Bedrock', kind: 'Guardrail', region: 'us-east-1', owner: 'Seguridad', state: 'Ejemplo' },
   { id: 'cloudtrail-log-001', name: auditLogName, title: 'Registro de auditoría de la tienda', service: 'CloudTrail', kind: 'Archivo de log', region: 'us-east-1', owner: 'Seguridad', state: 'Ejemplo' },
@@ -86,14 +85,10 @@ export const lineageNodes = [
   { ...assetByTable.pedidos_recibidos, id: 'raw_orders', kind: 'Ingesta', x: 260, y: 290 },
   { ...assetByTable.dimension_clientes, id: 'dim_clients', kind: 'Transformación', x: 505, y: 50 },
   { ...assetByTable.hechos_ventas, id: 'fact_sales', kind: 'Transformación', x: 505, y: 290 },
-  { ...assetByTable.devoluciones_pedido, id: 'returns', kind: 'Origen', x: 12, y: 365 },
-  { ...assetByTable.catalogo_productos, id: 'products', kind: 'Origen', x: 260, y: 365 },
   { id: 'dashboard', name: 'bi.ventas_diarias', title: 'Panel de ventas', kind: 'Consumo', x: 750, y: 165 },
 ].map(({ id, name, title, kind, x, y }) => ({ id, label: title, name, kind, x, y }))
 
-export const lineageReferenceId = 'REF-LIN-01'
-export const lineageReference = `Diseño ficticio del flujo de ventas · ${lineageReferenceId}`
-const referenceEdges = [
+const recordedEdges = [
   ['crm', 'raw_clients', 'Recibir los clientes desde el CRM'],
   ['erp', 'raw_orders', 'Recibir los pedidos de la tienda'],
   ['raw_clients', 'dim_clients', 'Depurar y consolidar el maestro de clientes'],
@@ -102,17 +97,11 @@ const referenceEdges = [
   ['fact_sales', 'dashboard', 'Alimentar los indicadores de ventas'],
   ['dim_clients', 'dashboard', 'Habilitar filtros por segmento de cliente'],
   ['raw_orders', 'dim_clients', 'Calcular la última fecha de compra del cliente'],
-  ['returns', 'fact_sales', 'Descontar devoluciones para obtener las ventas netas'],
-  ['products', 'fact_sales', 'Incorporar la categoría del producto a cada venta'],
 ]
-// Pares registrados en el ejemplo de respuesta de DataZone.
-const observedPairs = new Set([
-  'crm→raw_clients', 'erp→raw_orders', 'raw_clients→dim_clients', 'raw_orders→fact_sales',
-  'dim_clients→fact_sales', 'fact_sales→dashboard', 'dim_clients→dashboard', 'raw_orders→dim_clients',
-])
-export const lineageEdges = referenceEdges.map(([from, to, purpose], index) => ({
+// Conexiones registradas en el ejemplo de respuesta; no forman un universo esperado.
+export const lineageEdges = recordedEdges.map(([from, to, purpose], index) => ({
   id: `LIN-${String(index + 1).padStart(2, '0')}`,
-  from, to, purpose, observed: observedPairs.has(`${from}→${to}`),
+  from, to, purpose, observed: true,
 }))
 
 // El tono describe la condición observada, nunca la pertenencia al numerador.
@@ -121,11 +110,11 @@ const states = {
   'M-11': [{ code: 'ausente', label: 'Valor ausente', tone: 'error' }, { code: 'presente', label: 'Valor presente', tone: 'success' }],
   'M-16': [{ code: 'exitosa', label: 'Ejecución exitosa', tone: 'success' }, { code: 'fallida', label: 'Ejecución fallida', tone: 'error' }],
   'M-18': [{ code: 'verificable', label: 'Resultado verificable', tone: 'info' }, { code: 'sin_resultado', label: 'Sin resultado verificable', tone: 'warning' }],
-  'M-22': [{ code: 'conforme', label: 'Cifrado conforme', tone: 'success' }, { code: 'no_conforme', label: 'Cifrado no conforme', tone: 'error' }],
+  'M-22': [{ code: 'sse_kms', label: 'SSE-KMS informado', tone: 'info' }, { code: 'sse_s3', label: 'SSE-S3 informado', tone: 'info' }],
   'M-25': [{ code: 'completo', label: 'Registro completo', tone: 'success' }, { code: 'incompleto', label: 'Registro incompleto', tone: 'error' }],
-  'M-26': [{ code: 'vigente', label: 'Clasificación vigente', tone: 'success' }, { code: 'sin_vigencia', label: 'Sin clasificación vigente', tone: 'error' }],
-  'M-27': [{ code: 'esperada', label: 'Acción esperada', tone: 'success' }, { code: 'distinta', label: 'Acción distinta', tone: 'error' }],
-  'M-29': [{ code: 'coherente', label: 'Regla coherente', tone: 'success' }, { code: 'no_coherente', label: 'Regla no coherente', tone: 'error' }],
+  'M-26': [{ code: 'informada', label: 'Clasificación informada', tone: 'info' }, { code: 'sin_clasificacion', label: 'Sin clasificación', tone: 'warning' }],
+  'M-27': [{ code: 'intervino', label: 'Hubo intervención', tone: 'info' }, { code: 'sin_intervencion', label: 'Sin intervención', tone: 'neutral' }],
+  'M-29': [{ code: 'activa', label: 'Regla activa', tone: 'info' }, { code: 'deshabilitada', label: 'Regla deshabilitada', tone: 'warning' }],
 }
 const withStatus = (row, status) => ({ ...row, statusCode: status.code, statusLabel: status.label, tone: status.tone })
 
@@ -171,13 +160,7 @@ const sensitiveData = [
   'correo electrónico', 'teléfono de contacto', 'dirección de entrega', 'número de identificación',
   'tarjeta de pago', 'cuenta bancaria', 'clave de acceso', 'contraseña', 'código de verificación', 'token de sesión',
 ]
-const classifiedAssets = [
-  ...dataZoneAssets.map(asset => ({ name: asset.title, detail: asset.name })),
-  ...['pedidos', 'contactos', 'cobros'].flatMap(type => Array.from({ length: 10 }, (_, day) => ({
-    name: `Exportación de ${type} · 2026-11-${sequence(day, 2)}`,
-    detail: `intercambios.${type}_202611${sequence(day, 2)}`,
-  }))),
-]
+const classifiedAssets = dataZoneAssets.map(asset => ({ name: asset.title, detail: asset.name }))
 
 const sampleRows = {
   'M-11': ['VALOR', (i, missing) => ({
@@ -190,12 +173,12 @@ const sampleRows = {
   })],
   'M-18': ['CONTROL', (i, evaluated) => ({
     name: outputChecks[i],
-    detail: evaluated ? `Regla DQDL en ${assetByTable.pedidos_venta.name}` : 'Control planificado sin evaluación en el lote',
+    detail: evaluated ? `Regla DQDL en ${assetByTable.pedidos_venta.name}` : 'Regla configurada sin resultado en el lote',
     ...(evaluated && { checkOutcome: i < 6 ? 'Aprobado' : 'Fallido' }),
   })],
-  'M-22': ['OBJETO', (i, compliant) => ({
+  'M-22': ['OBJETO', (i, usesKms) => ({
     name: `pedidos/lote-2026-11-08/parte-${sequence(i)}.parquet`,
-    detail: `${demoBuckets[1]} · versión v1 · ${compliant ? 'SSE-KMS' : 'SSE-S3 (se exige SSE-KMS)'}`,
+    detail: `${demoBuckets[1]} · versión v1 · ${usesKms ? 'SSE-KMS' : 'SSE-S3'}`,
   })],
   'M-25': ['EVENTO', (i, complete) => ({
     name: `${auditEventTypes[i % auditEventTypes.length]} · evento ${sequence(i)}`,
@@ -203,19 +186,19 @@ const sampleRows = {
   })],
   'M-26': ['ACTIVO', (i, classified) => ({
     name: classifiedAssets[i].name,
-    detail: `${classifiedAssets[i].detail} · ${classified ? 'Clasificación registrada en DataZone' : 'Clasificación sin registrar en DataZone'}`,
+    detail: `${classifiedAssets[i].detail} · ${classified ? 'Clasificación registrada en DataZone' : 'Sin clasificación en DataZone'}`,
   })],
-  'M-27': ['CASO', (i, expected) => {
+  'M-27': ['CASO', (i, intervened) => {
     const isInput = i < sensitiveData.length
     const action = isInput ? 'bloquear' : 'enmascarar'
     return {
       name: `${isInput ? 'Entrada' : 'Salida'} con ${sensitiveData[i % sensitiveData.length]}`,
-      detail: `Esperado: ${action} · Resultado: ${expected ? action : 'permitir'}`,
+      detail: `Resultado del ejemplo: ${intervened ? action : 'permitir'}`,
     }
   }],
-  'M-29': ['BUCKET', (i, compliant) => ({
+  'M-29': ['BUCKET', (i, active) => ({
     name: demoBuckets[i],
-    detail: `Prefijo exportaciones/ · ${compliant ? 'Expira a los 30 días' : i === 8 ? 'Regla deshabilitada' : 'Expira a los 90 días (se exigen 30)'}`,
+    detail: `Prefijo exportaciones/ · ${active ? i === 8 ? 'Expira a los 90 días' : 'Expira a los 30 días' : 'Regla deshabilitada'}`,
   })],
 }
 
@@ -250,8 +233,8 @@ export function populationFor(metric) {
     const to = lineageNodes.find(node => node.id === edge.to)
     return withStatus({
       id: edge.id, name: `${from.label} → ${to.label}`, detail: `${edge.purpose} · ${from.name} → ${to.name}`,
-      referenceId: lineageReferenceId, inNumerator: edge.observed,
-    }, edge.observed ? { code: 'observado', label: 'Registrado', tone: 'info' } : { code: 'no_observado', label: 'Sin evidencia en la consulta', tone: 'warning' })
+      inNumerator: true,
+    }, { code: 'registrado', label: 'Registrado', tone: 'info' })
   })
 
   if (metric.id === 'M-21') return accessFindings.map(([role, permission], i) => withStatus({

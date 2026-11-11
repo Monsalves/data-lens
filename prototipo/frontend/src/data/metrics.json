@@ -1,10 +1,10 @@
 [
   {
     "id": "M-01",
-    "name": "Se identifica un responsable",
+    "name": "Responsable informado en catálogo",
     "pillar": "Responsabilidad",
     "dimension": "Responsables",
-    "reference": "Inventario de activos y campo de responsable aprobado.",
+    "reference": "Activos consultados y campo de responsable disponible en el catálogo.",
     "operations": [
       {
         "name": "GetAsset",
@@ -42,14 +42,15 @@
     "num_desc": "16 activos con campo no vacío",
     "den_desc": "20 activos del universo revisado",
     "sample_value": 80,
-    "states": null
+    "states": null,
+    "scope_note": "Comprueba si el campo tiene valor; no confirma que esa persona acepte la responsabilidad."
   },
   {
     "id": "M-04",
     "name": "Solicitudes y concesiones por estado",
     "pillar": "Responsabilidad",
     "dimension": "Políticas de uso",
-    "reference": "Dominio, periodo, estados y vínculos entre solicitud, suscripción y grant.",
+    "reference": "Solicitudes, suscripciones y grants del dominio y periodo consultados.",
     "operations": [
       {
         "name": "ListSubscriptionRequests",
@@ -112,14 +113,15 @@
         "ACTIVE": 5,
         "FAILED": 1
       }
-    }
+    },
+    "scope_note": "Cuenta estados; no determina si la concesión de acceso fue apropiada."
   },
   {
     "id": "M-07",
     "name": "Completitud de metadatos requeridos",
     "pillar": "Visibilidad",
     "dimension": "Catálogo",
-    "reference": "Campos obligatorios por formulario y activos aplicables.",
+    "reference": "Campos marcados como requeridos en el formulario de los activos consultados.",
     "operations": [
       {
         "name": "GetFormType",
@@ -157,14 +159,15 @@
     "num_desc": "90 pares con valor no vacío",
     "den_desc": "100 pares (20 activos × 5 campos)",
     "sample_value": 90,
-    "states": null
+    "states": null,
+    "scope_note": "Comprueba presencia de valores; no valida que su contenido sea correcto."
   },
   {
     "id": "M-09",
-    "name": "Cobertura de tramos esperados de linaje",
+    "name": "Tramos de linaje registrados",
     "pillar": "Visibilidad",
     "dimension": "Linaje",
-    "reference": "Pares origen → destino del flujo, definidos y validados por su equipo responsable para el alcance evaluado.",
+    "reference": "Conexiones devueltas por el grafo de linaje consultado.",
     "operations": [
       {
         "name": "GetLineageNode",
@@ -181,22 +184,23 @@
         "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetLineageNode.html"
       }
     ],
-    "formula": "tramos de la referencia encontrados ÷ tramos de la referencia",
-    "kind": "pct",
+    "formula": "conteo de conexiones registradas en la consulta",
+    "kind": "count",
     "num": 8,
-    "den": 10,
-    "unit": "%",
-    "num_desc": "8 coincidencias en la consulta simulada",
-    "den_desc": "10 tramos del diseño ficticio",
-    "sample_value": 80,
-    "states": null
+    "den": 0,
+    "unit": "tramos",
+    "num_desc": "8 conexiones registradas en el grafo de ejemplo",
+    "den_desc": "Sin referencia de tramos esperados",
+    "sample_value": 8,
+    "states": null,
+    "scope_note": "No se infiere qué conexiones faltan ni se calcula cobertura sin una referencia independiente."
   },
   {
     "id": "M-11",
-    "name": "Nulos y ausentes de valores requeridos",
+    "name": "Filas que fallan una regla de completitud",
     "pillar": "Calidad",
     "dimension": "Reglas de calidad",
-    "reference": "Regla DQDL, campo obligatorio y filas aplicables.",
+    "reference": "Regla DQDL de completitud y resultado agregado del lote consultado.",
     "operations": [
       {
         "name": "GetDataQualityRuleset",
@@ -222,20 +226,24 @@
           "AggregatedMetrics.TotalRowsPassed",
           "AggregatedMetrics.TotalRowsFailed",
           "AggregatedMetrics.TotalRulesProcessed",
-          "AggregatedMetrics.TotalRulesPassed"
+          "AggregatedMetrics.TotalRulesPassed",
+          "RuleResults[].Name",
+          "RuleResults[].Result",
+          "RuleResults[].RuleMetrics"
         ],
         "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityResult.html"
       }
     ],
-    "formula": "valores faltantes ÷ obligatorios aplicables",
+    "formula": "filas fallidas en la regla ÷ filas procesadas",
     "kind": "pct",
     "num": 10,
     "den": 100,
     "unit": "%",
-    "num_desc": "10 cliente_id ausentes",
-    "den_desc": "100 valores obligatorios",
+    "num_desc": "10 filas fallidas según la regla",
+    "den_desc": "100 filas procesadas por la regla",
     "sample_value": 10,
-    "states": null
+    "states": null,
+    "scope_note": "Glue entrega conteos por regla; los identificadores de fila de esta demo no provienen de esa API."
   },
   {
     "id": "M-16",
@@ -267,14 +275,15 @@
     "num_desc": "18 SUCCEEDED",
     "den_desc": "20 terminales (18+2); 3 RUNNING fuera del denominador",
     "sample_value": 90,
-    "states": null
+    "states": null,
+    "scope_note": "Incluye ejecuciones terminales del job consultado; no mide la calidad de los datos producidos."
   },
   {
     "id": "M-18",
-    "name": "Cobertura de controles de salida",
+    "name": "Reglas de calidad con resultado",
     "pillar": "Calidad",
     "dimension": "Curación",
-    "reference": "Lista de controles de salida planificados y aplicables.",
+    "reference": "Reglas del ruleset y resultados de la evaluación consultada.",
     "operations": [
       {
         "name": "GetDataQualityRuleset",
@@ -300,20 +309,24 @@
           "AggregatedMetrics.TotalRowsPassed",
           "AggregatedMetrics.TotalRowsFailed",
           "AggregatedMetrics.TotalRulesProcessed",
-          "AggregatedMetrics.TotalRulesPassed"
+          "AggregatedMetrics.TotalRulesPassed",
+          "RuleResults[].Name",
+          "RuleResults[].Result",
+          "RuleResults[].RuleMetrics"
         ],
         "docs": "https://docs.aws.amazon.com/glue/latest/webapi/API_GetDataQualityResult.html"
       }
     ],
-    "formula": "controles con resultado verificable ÷ planificados",
+    "formula": "reglas con resultado ÷ reglas configuradas",
     "kind": "pct",
     "num": 8,
     "den": 10,
     "unit": "%",
-    "num_desc": "8 evaluados (6 PASS, 2 FAIL)",
-    "den_desc": "10 controles planificados",
+    "num_desc": "8 reglas con resultado",
+    "den_desc": "10 reglas configuradas",
     "sample_value": 80,
-    "states": null
+    "states": null,
+    "scope_note": "Mide disponibilidad del resultado; no afirma que las reglas cubran todos los riesgos."
   },
   {
     "id": "M-21",
@@ -345,14 +358,15 @@
     "num_desc": "8 UNUSED_PERMISSION activos",
     "den_desc": "ventana de 90 días",
     "sample_value": 8,
-    "states": null
+    "states": null,
+    "scope_note": "Cuenta hallazgos activos del analizador consultado; no equivale a todos los permisos de la cuenta."
   },
   {
     "id": "M-22",
-    "name": "Cifrado conforme de objetos o versiones",
+    "name": "Objetos con cifrado SSE-KMS registrado",
     "pillar": "Acceso y seguridad",
     "dimension": "Protección",
-    "reference": "Cohorte de objetos o versiones y cifrado/clave exigidos.",
+    "reference": "Objetos o versiones inspeccionados y algoritmo de cifrado informado por S3.",
     "operations": [
       {
         "name": "HeadObject",
@@ -369,22 +383,23 @@
         "docs": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_HeadObject.html"
       }
     ],
-    "formula": "versiones con cifrado conforme ÷ revisadas",
+    "formula": "objetos con SSE-KMS ÷ objetos inspeccionados",
     "kind": "pct",
     "num": 90,
     "den": 100,
     "unit": "%",
-    "num_desc": "90 con SSE-KMS exigido",
-    "den_desc": "100 versiones con estado verificable",
+    "num_desc": "90 objetos con SSE-KMS informado",
+    "den_desc": "100 objetos inspeccionados",
     "sample_value": 90,
-    "states": null
+    "states": null,
+    "scope_note": "SSE-S3 también cifra; sin una política aplicable no se determina conformidad."
   },
   {
     "id": "M-25",
-    "name": "Completitud de registros de auditoría",
+    "name": "Campos presentes en registros de auditoría",
     "pillar": "Acceso y seguridad",
     "dimension": "Auditoría",
-    "reference": "Lote de logs y campos obligatorios por tipo de evento.",
+    "reference": "Registros leídos y campos exigidos para el tipo de evento del ejemplo.",
     "operations": [
       {
         "name": "GetObject",
@@ -408,14 +423,15 @@
     "num_desc": "95 registros completos",
     "den_desc": "100 registros examinados",
     "sample_value": 95,
-    "states": null
+    "states": null,
+    "scope_note": "Revisa campos de los registros disponibles; no prueba que se hayan capturado todos los eventos."
   },
   {
     "id": "M-26",
-    "name": "Cobertura de clasificación",
+    "name": "Clasificación informada en catálogo",
     "pillar": "Cumplimiento y privacidad",
     "dimension": "Sensibles",
-    "reference": "Activos elegibles, campo de clasificación y vigencia acordada.",
+    "reference": "Activos consultados y campo de clasificación disponible en el catálogo.",
     "operations": [
       {
         "name": "GetAsset",
@@ -445,22 +461,23 @@
         "docs": "https://docs.aws.amazon.com/datazone/latest/APIReference/API_GetFormType.html"
       }
     ],
-    "formula": "activos con clasificación vigente ÷ elegibles",
+    "formula": "activos con clasificación informada ÷ consultados",
     "kind": "pct",
-    "num": 40,
-    "den": 50,
+    "num": 16,
+    "den": 20,
     "unit": "%",
-    "num_desc": "40 con clasificación vigente registrada",
-    "den_desc": "50 activos elegibles",
+    "num_desc": "16 activos con clasificación registrada",
+    "den_desc": "20 activos del catálogo consultado",
     "sample_value": 80,
-    "states": null
+    "states": null,
+    "scope_note": "La presencia del dato no valida su exactitud ni su vigencia."
   },
   {
     "id": "M-27",
-    "name": "Casos infractores con acción esperada",
+    "name": "Intervenciones del guardrail en pruebas",
     "pillar": "Cumplimiento y privacidad",
     "dimension": "Privacidad E/S",
-    "reference": "Corpus sintético etiquetado y acción esperada por caso.",
+    "reference": "Batería sintética de 20 entradas y salidas enviada al guardrail del ejemplo.",
     "operations": [
       {
         "name": "ApplyGuardrail",
@@ -477,22 +494,23 @@
         "docs": "https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_ApplyGuardrail.html"
       }
     ],
-    "formula": "infractores con acción esperada ÷ ejecutados",
+    "formula": "casos con intervención ÷ casos de prueba",
     "kind": "pct",
     "num": 18,
     "den": 20,
     "unit": "%",
-    "num_desc": "18 bloqueados/enmascarados",
-    "den_desc": "20 casos etiquetados",
+    "num_desc": "18 casos con intervención",
+    "den_desc": "20 casos de prueba",
     "sample_value": 90,
-    "states": null
+    "states": null,
+    "scope_note": "Cuenta acciones observadas en esta batería; no demuestra eficacia general ni cumplimiento."
   },
   {
     "id": "M-29",
-    "name": "Reglas de conservación conformes con política",
+    "name": "Reglas de ciclo de vida activas",
     "pillar": "Cumplimiento y privacidad",
     "dimension": "Retención",
-    "reference": "Buckets sujetos y política de conservación para objetos actuales.",
+    "reference": "Buckets consultados y estado de sus reglas de ciclo de vida.",
     "operations": [
       {
         "name": "GetBucketLifecycleConfiguration",
@@ -509,14 +527,15 @@
         "docs": "https://docs.aws.amazon.com/AmazonS3/latest/API/API_GetBucketLifecycleConfiguration.html"
       }
     ],
-    "formula": "activos con configuración coherente ÷ sujetos a política",
+    "formula": "buckets con regla activa ÷ buckets consultados",
     "kind": "pct",
-    "num": 8,
+    "num": 9,
     "den": 10,
     "unit": "%",
-    "num_desc": "8 coherentes con 30 días",
-    "den_desc": "10 activos sujetos",
-    "sample_value": 80,
-    "states": null
+    "num_desc": "9 buckets con regla activa",
+    "den_desc": "10 buckets consultados",
+    "sample_value": 90,
+    "states": null,
+    "scope_note": "La presencia de una regla no determina si el plazo de conservación es adecuado."
   }
 ]
