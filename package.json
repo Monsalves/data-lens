@@ -12,7 +12,7 @@
     "dev": "astro dev --host 127.0.0.1",
     "prebuild": "npm run sync",
     "build": "astro build",
-    "postbuild": "npm --prefix prototipo/frontend run build -- --base /data-lens/piloto/ --outDir ../../dist/piloto && node scripts/pilot-routes.mjs",
+    "postbuild": "npm --prefix prototipo/frontend run build -- --base /data-lens/piloto/ --outDir ../../dist/piloto && npm --prefix prototipo/frontend-v2 run build -- --base /data-lens/piloto-v2/ --outDir ../../dist/piloto-v2 && node scripts/pilot-routes.mjs",
     "check": "npm run sync && astro check",
     "test": "node --test scripts/*.test.mjs",
     "preview": "astro preview --host 127.0.0.1"

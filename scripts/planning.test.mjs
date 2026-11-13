@@ -31,7 +31,10 @@ test('conserva actividades, estados y evidencia del README sin fijar el avance f
   assert.equal(weekTwo.length, 2);
   assert.equal(weekTwo[0].evidence[0].url, 'https://github.com/Monsalves/data-lens/blob/main/casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md');
   assert.match(weekTwo[1].activity, /mockups navegables/iu);
-  assert.equal(weekTwo[1].evidence[0].url, 'https://github.com/Monsalves/data-lens/blob/main/prototipo/frontend/README.md');
+  assert.deepEqual(weekTwo[1].evidence.map(({ url }) => url), [
+    'https://github.com/Monsalves/data-lens/blob/main/prototipo/frontend/README.md',
+    'https://github.com/Monsalves/data-lens/blob/main/prototipo/frontend-v2/README.md',
+  ]);
   assert.deepEqual(rows[0].evidence, [
     { label: 'Marco de trabajo 1.4', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Marco_Trabajo_Datos_v1_4.md' },
     { label: 'Plantilla F0–F3', url: 'https://github.com/Monsalves/data-lens/blob/main/metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx' }

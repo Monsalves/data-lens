@@ -26,8 +26,10 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             prototipo/frontend/package-lock.json
+            prototipo/frontend-v2/package-lock.json
       - run: npm ci
       - run: npm ci --prefix prototipo/frontend
+      - run: npm ci --prefix prototipo/frontend-v2
       - run: npm test
       - run: npm run check
       - run: npm run build

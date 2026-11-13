@@ -3,7 +3,7 @@
 Marco de trabajo y planificación del proyecto.
 
 - **Portal web:** [Abrir Data Lens](https://monsalves.github.io/data-lens/)
-- **Demo del piloto:** [Explorar el frontend](https://monsalves.github.io/data-lens/piloto/) con inventario de ejemplo y mediciones simuladas.
+- **Prototipos navegables.** [Versión 1.0](https://monsalves.github.io/data-lens/piloto/) · [Versión 2.0](https://monsalves.github.io/data-lens/piloto-v2/). Ambas usan inventario de ejemplo y mediciones simuladas.
 - **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md)
 - **Plantilla por fases:** [Excel F0–F3 y matriz](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx)
 - **Planificación:** [Planificacion.xlsx](planificacion/Planificacion.xlsx)
@@ -16,7 +16,7 @@ Marco de trabajo y planificación del proyecto.
 | --- | --- | --- | --- | --- | --- |
 | S01 | 27 oct–03 nov 2026 | Diseñar y documentar la metodología general de assessment de la capa de datos. | Documento marco de trabajo. | 🟢 Terminado | [Marco de trabajo 1.4](metodologia/Marco_Trabajo_Datos_v1_4.md) · [Plantilla F0–F3](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx) |
 | S02 | 04–10 nov 2026 | Aplicar la metodología a un caso de uso. | Documento del caso de uso elaborado con el marco de trabajo. | 🟢 Terminado | [Caso ilustrativo: contexto y recorrido F0–F3](casos/S02_Caso_de_uso/Caso_S02_Recorrido_Metodologico.md) · [Plantilla rellena del caso](casos/S02_Caso_de_uso/Plantilla_S02_Banco_Tinamu_Digital_rellena.xlsx) |
-| S02 | 04–10 nov 2026 | Diseñar Mockups navegables del prototipo | Mockup navegable con inventario de ejemplo y 13 métricas simuladas. | 🟢 Terminado | [Demo navegable del piloto](prototipo/frontend/README.md) |
+| S02 | 04–10 nov 2026 | Diseñar Mockups navegables del prototipo | Mockup navegable con inventario de ejemplo y 13 métricas simuladas. | 🟢 Terminado | [Prototipo 1.0](prototipo/frontend/README.md) · [Prototipo 2.0](prototipo/frontend-v2/README.md) |
 | S03 | 11–17 nov 2026 | Investigar y validar técnicamente los servicios AWS relevantes para evaluar la capa de datos. | Mapa preliminar de servicios AWS y especificación de las 13 métricas del piloto. | 🟢 Terminado | [Mapa preliminar de servicios](investigacion/Servicios_AWS_S03_borrador.md) · [Diagrama de las 13 métricas del piloto](investigacion/Diagrama_Metricas_Piloto_13.html) |
 | S04 | 18–24 nov 2026 | Comparar soluciones existentes, identificar oportunidades de reutilización | Documento de Análisis comparativo y oportunidades de reutilización. | 🟢 Terminado | [Documento de Análisis comparativo y oportunidades de reutilización.](investigacion/Comparacion_Soluciones_Existentes_S04.md) |
 | S04 | 18–24 nov 2026 | Definir stack tecnológico y arquitectura | Stack tecnológico y arquitectura del prototipo documentados. | 🟡 En progreso | — |
