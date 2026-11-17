@@ -13,6 +13,7 @@ const evidenceRoute = (url: string) => {
   if (url.endsWith('/planificacion/Planificacion.xlsx')) return `${base}planificacion-excel/`;
   if (url.endsWith('/prototipo/frontend/README.md')) return `${base}piloto/`;
   if (url.endsWith('/prototipo/frontend-v2/README.md')) return `${base}piloto-v2/`;
+  if (url.endsWith('/public/piloto-v3/index.html')) return `${base}piloto-v3/`;
   return url;
 };
 const statusLabels: Record<string, string> = { progress: 'En curso', blocked: 'Bloqueada', pending: 'Pendiente', done: 'Terminada' };
