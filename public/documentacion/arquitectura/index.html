@@ -1,0 +1,832 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data Lens — Alcance, stack, arquitectura local y sitemap completo</title>
+<style>
+:root{--ink:#1b2b44;--muted:#65748c;--line:#dce4ef;--bg:#f5f8fd;--blue:#2b5cc8;--white:#fff}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);font-family:Inter,system-ui,-apple-system,Segoe UI,Arial,sans-serif;color:var(--ink);line-height:1.58}
+header{background:#fff;border-bottom:1px solid var(--line);padding:18px clamp(18px,4vw,58px);position:sticky;top:0;z-index:4;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{font-weight:750;color:#234fa4;letter-spacing:-.3px}nav{display:flex;gap:18px;flex-wrap:wrap}nav a{font-size:13px;text-decoration:none;color:#31517d}nav a:hover{text-decoration:underline}
+main{max-width:1570px;margin:auto;padding:32px clamp(16px,4vw,60px) 76px}
+h1{font-size:clamp(24px,2.6vw,34px);line-height:1.2;letter-spacing:-.6px;margin:0 0 8px}h2{font-size:22px;margin:32px 0 12px;border-bottom:1px solid var(--line);padding-bottom:8px}h3{font-size:17px;margin:20px 0 14px}p{max-width:1190px;color:#33465f}strong{color:#142a49}.deck{color:var(--muted);font-size:13px;margin:0 0 20px}
+section.copy{max-width:1320px}table{border-collapse:collapse;width:100%;font-size:14px;background:#fff;box-shadow:0 2px 9px #1a2c3c08}th{text-align:left;background:#eaf0fa}td,th{padding:12px 14px;border:1px solid var(--line);vertical-align:top}td:first-child{font-weight:650;width:23%}
+.frame{border-radius:14px;background:#fff;border:1px solid var(--line);overflow:hidden;box-shadow:0 5px 20px #1a2c3c0a}
+.figure{padding:20px;overflow-x:auto}.figure svg{display:block;width:100%;height:auto}.figure svg a:hover text{text-decoration:underline}
+.toolbar{padding:12px 18px;background:#fdfefe;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.toolbar label{font-size:13px;font-weight:650}.toolbar input{font:inherit;font-size:13px;min-width:220px;flex:1;max-width:420px;border:1px solid #b9c7dd;border-radius:8px;padding:8px}
+.toolbar button{font:inherit;font-size:12px;cursor:pointer;padding:8px 12px;border:1px solid #bbcae0;border-radius:8px;background:white;color:#254d92}
+#map-viewport{background:#f7faff;overflow:auto;max-height:none;height:780px;position:relative;padding:18px}
+#map-viewport svg{display:block;max-width:none;height:auto;transform-origin:top left}#map-viewport svg .node:hover path,#map-viewport svg .node:hover polygon{stroke:#0b71d4;stroke-width:3}
+#map-results{display:flex;gap:6px;flex-wrap:wrap;padding:8px 18px;background:#fff}#map-results:empty{display:none}#map-results a{font-size:12px;padding:4px 8px;border:1px solid #d0ddec;border-radius:5px;text-decoration:none;color:var(--blue)}
+.note{font-size:12px;color:var(--muted);margin:9px 1px 0;max-width:none}.mini{font-size:12px;color:var(--muted);margin:10px 0 0}
+footer{margin:30px 0 0;font-size:12px;color:var(--muted)}
+@media(max-width:600px){main{padding:20px 12px 45px}.figure{padding:12px}#map-viewport{height:520px;max-height:65vh}table{font-size:12px}td,th{padding:9px}header{position:static}}
+@media print{header{position:static}#map-viewport{max-height:none;height:auto;overflow:visible}.toolbar,#map-results{display:none}main{padding:18px}}
+</style></head>
+<body>
+<header><span class="brand">DATA LENS · DOCUMENTACIÓN DEL MVP</span><nav><a href="#alcance">Alcance</a><a href="#stack">Stack</a><a href="#arquitectura">Arquitectura local</a><a href="#sitemap">Sitemap completo</a></nav></header>
+<main>
+<section class="copy"><h1>Data Lens — Alcance y arquitectura del prototipo</h1>
+<div class="deck">Propuesta de MVP · 17 de noviembre de 2026 · documentación v5</div>
+
+</section>
+<section class="copy" id="alcance"><h2>Alcance inicial</h2>
+<p>Data Lens permitirá <strong>descubrir activos de datos de una cuenta AWS y evaluar controles técnicos observables</strong>, para pasar del Resumen a un recurso concreto, consultar su ficha y revisar los resultados asociados. La primera versión se centrará en <strong>buckets S3, tablas almacenadas en S3 y catalogadas en Glue Data Catalog, Glue Jobs y sus ejecuciones, y recursos y tablas de Amazon Redshift</strong>. Se consultarán configuraciones, metadatos y resultados de evaluaciones existentes que estén disponibles mediante los permisos otorgados. <strong>Amazon DataZone es opcional</strong>: puede aportar metadatos adicionales, pero no es necesario para descubrir estos servicios.</p>
+<p><strong>Cuándo funciona:</strong> un bucket S3 puede inventariarse y revisar su configuración <strong>sin Glue</strong>; para reconocer columnas o particiones de una tabla en S3 se requiere una definición accesible en <strong>Glue Data Catalog</strong>. Los <strong>Glue Jobs</strong> pueden revisarse aunque sus tablas de entrada y salida no estén catalogadas. <strong>Redshift</strong> puede descubrirse sin Glue ni DataZone, pero el detalle de sus bases, esquemas y tablas requiere acceso autorizado a los metadatos de la base de datos. La calidad de datos se mostrará <strong>si existen resultados accesibles y vinculables</strong>, como los de Glue Data Quality; no se asumirá que la simple existencia de una tabla prueba su calidad. Si faltan permisos o evidencia, la verificación quedará <strong>sin acceso o no medida</strong>. Por ahora se excluyen evaluaciones del contenido de documentos libres en S3, otras bases de datos (por ejemplo, MongoDB o RDS) y otras nubes.</p>
+
+</section>
+<section class="copy" id="stack"><h2>Stack tecnológico propuesto</h2>
+<table>
+<thead>
+<tr>
+<th>Componente</th>
+<th>Tecnología</th>
+<th>Justificación de la elección</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frontend</td>
+<td><strong>React + TypeScript + Vite</strong></td>
+<td>Permite llevar la interfaz HTML aprobada a componentes reutilizables, manteniendo navegación, filtros y estados consistentes.</td>
+</tr>
+<tr>
+<td>Backend/API</td>
+<td><strong>Python + FastAPI + Pydantic</strong></td>
+<td>Facilita desarrollar endpoints tipados y definir un contrato claro entre frontend, escaneos y resultados.</td>
+</tr>
+<tr>
+<td>Base de datos local</td>
+<td><strong>SQLite + SQLAlchemy + Alembic</strong></td>
+<td>Guarda inventario y evaluaciones sin administrar un servidor de base de datos durante el MVP; permite evolucionar el esquema.</td>
+</tr>
+<tr>
+<td>Integración AWS</td>
+<td><strong>boto3 + IAM/STS</strong></td>
+<td>Usa el SDK oficial para consultar los servicios admitidos con permisos acotados.</td>
+</tr>
+<tr>
+<td>Procesamiento de escaneos</td>
+<td><strong>Worker Python</strong></td>
+<td>Ejecuta descubrimiento y verificaciones sin bloquear las consultas de la interfaz.</td>
+</tr>
+<tr>
+<td>Pruebas</td>
+<td><strong>pytest + Playwright</strong></td>
+<td>Comprueba cálculos, filtros y navegación desde un activo hasta su resultado.</td>
+</tr>
+</tbody>
+</table>
+
+</section>
+<section id="arquitectura"><h2>1. Arquitectura local del MVP</h2><div class="frame"><div class="figure"><svg height="282pt" viewbox="0.00 0.00 1148.00 282.00" width="1148pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g class="graph" id="graph0" transform="scale(1 1) rotate(0) translate(18 264)">
+<title>G</title>
+<polygon fill="white" points="-18,18 -18,-264 1130,-264 1130,18 -18,18" stroke="transparent"></polygon>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="21.00" text-anchor="middle" x="556" y="-225.2">Data Lens · Flujo de la arquitectura local</text>
+<g class="cluster" id="clust1">
+<title>cluster_local</title>
+<path d="M171,-8C171,-8 807,-8 807,-8 813,-8 819,-14 819,-20 819,-20 819,-195 819,-195 819,-201 813,-207 807,-207 807,-207 171,-207 171,-207 165,-207 159,-201 159,-195 159,-195 159,-20 159,-20 159,-14 165,-8 171,-8" fill="white" stroke="#d6e0eb"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="12.00" text-anchor="middle" x="489" y="-193.4">Equipo local · MVP</text>
+</g>
+<g class="cluster" id="clust2">
+<title>cluster_aws</title>
+<path d="M944,-32C944,-32 1092,-32 1092,-32 1098,-32 1104,-38 1104,-44 1104,-44 1104,-103 1104,-103 1104,-109 1098,-115 1092,-115 1092,-115 944,-115 944,-115 938,-115 932,-109 932,-103 932,-103 932,-44 932,-44 932,-38 938,-32 944,-32" fill="white" stroke="#d6e0eb"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="12.00" text-anchor="middle" x="1018" y="-101.4">Cuenta AWS evaluada</text>
+</g>
+<!-- user -->
+<g class="node" id="node1">
+<title>user</title>
+<path d="M57,-168C57,-168 12,-168 12,-168 6,-168 0,-162 0,-156 0,-156 0,-144 0,-144 0,-138 6,-132 12,-132 12,-132 57,-132 57,-132 63,-132 69,-138 69,-144 69,-144 69,-156 69,-156 69,-162 63,-168 57,-168" fill="#f7fafe" stroke="#cad7e9" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="34.5" y="-147.2">Usuario</text>
+</g>
+<!-- react -->
+<g class="node" id="node2">
+<title>react</title>
+<path d="M294.5,-173C294.5,-173 186.5,-173 186.5,-173 180.5,-173 174.5,-167 174.5,-161 174.5,-161 174.5,-139 174.5,-139 174.5,-133 180.5,-127 186.5,-127 186.5,-127 294.5,-127 294.5,-127 300.5,-127 306.5,-133 306.5,-139 306.5,-139 306.5,-161 306.5,-161 306.5,-167 300.5,-173 294.5,-173" fill="#e7effe" stroke="#7f9fd6" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="240.5" y="-153.2">React + TypeScript</text>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="240.5" y="-141.2">(interfaz)</text>
+</g>
+<!-- user&#45;&gt;react -->
+<g class="edge" id="edge1">
+<title>user-&gt;react</title>
+<path d="M69.19,-150C95.81,-150 133.93,-150 167.35,-150" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="167.41,-152.45 174.41,-150 167.41,-147.55 167.41,-152.45" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="118" y="-153">navegar</text>
+</g>
+<!-- api -->
+<g class="node" id="node3">
+<title>api</title>
+<path d="M516,-62C516,-62 474,-62 474,-62 468,-62 462,-56 462,-50 462,-50 462,-28 462,-28 462,-22 468,-16 474,-16 474,-16 516,-16 516,-16 522,-16 528,-22 528,-28 528,-28 528,-50 528,-50 528,-56 522,-62 516,-62" fill="#ebf5fe" stroke="#9cc1e6" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="495" y="-42.2">FastAPI</text>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="495" y="-30.2">(API)</text>
+</g>
+<!-- react&#45;&gt;api -->
+<g class="edge" id="edge2">
+<title>react-&gt;api</title>
+<path d="M294.12,-126.87C342.24,-105.71 412.29,-74.92 455.4,-55.97" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="456.4,-58.2 461.83,-53.14 454.43,-53.72 456.4,-58.2" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="382.5" y="-118">leer resultados /</text>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="382.5" y="-107">iniciar escaneo</text>
+</g>
+<!-- worker -->
+<g class="node" id="node4">
+<title>worker</title>
+<path d="M799,-86C799,-86 677,-86 677,-86 671,-86 665,-80 665,-74 665,-74 665,-52 665,-52 665,-46 671,-40 677,-40 677,-40 799,-40 799,-40 805,-40 811,-46 811,-52 811,-52 811,-74 811,-74 811,-80 805,-86 799,-86" fill="#eaf6f3" stroke="#8cb8af" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="738" y="-66.2">Worker Python</text>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="738" y="-54.2">(recolección y reglas)</text>
+</g>
+<!-- api&#45;&gt;worker -->
+<g class="edge" id="edge4">
+<title>api-&gt;worker</title>
+<path d="M528,-42.19C561,-45.47 613.73,-50.72 657.97,-55.13" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="657.78,-57.57 664.99,-55.83 658.27,-52.7 657.78,-57.57" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="602" y="-55">iniciar trabajo</text>
+</g>
+<!-- sqlite -->
+<g class="node" id="node5">
+<title>sqlite</title>
+<path d="M314,-73.98C314,-77.16 281.06,-79.75 240.5,-79.75 199.94,-79.75 167,-77.16 167,-73.98 167,-73.98 167,-22.02 167,-22.02 167,-18.84 199.94,-16.25 240.5,-16.25 281.06,-16.25 314,-18.84 314,-22.02 314,-22.02 314,-73.98 314,-73.98" fill="#fff7e9" stroke="#d7bd89" stroke-width="1.3"></path>
+<path d="M314,-73.98C314,-70.79 281.06,-68.2 240.5,-68.2 199.94,-68.2 167,-70.79 167,-73.98" fill="none" stroke="#d7bd89" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="240.5" y="-51.2">SQLite</text>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="240.5" y="-39.2">(activos y resultados)</text>
+</g>
+<!-- api&#45;&gt;sqlite -->
+<g class="edge" id="edge3">
+<title>api-&gt;sqlite</title>
+<path d="M461.89,-40.14C426.72,-41.4 368.99,-43.46 321.43,-45.15" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="321.1,-42.71 314.19,-45.41 321.28,-47.61 321.1,-42.71" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="382.5" y="-48">leer estado</text>
+</g>
+<!-- worker&#45;&gt;sqlite -->
+<g class="edge" id="edge7">
+<title>worker-&gt;sqlite</title>
+<path d="M664.96,-71.37C608.34,-77.94 539,-86 539,-86 539,-86 451,-86 451,-86 451,-86 343,-67 343,-67 343,-67 333.9,-65.3 321.16,-62.91" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="321.52,-60.49 314.19,-61.61 320.62,-65.3 321.52,-60.49" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="495" y="-100">guardar evidencia</text>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="495" y="-89">y resultados</text>
+</g>
+<!-- aws -->
+<g class="node" id="node6">
+<title>aws</title>
+<path d="M1084,-86C1084,-86 952,-86 952,-86 946,-86 940,-80 940,-74 940,-74 940,-52 940,-52 940,-46 946,-40 952,-40 952,-40 1084,-40 1084,-40 1090,-40 1096,-46 1096,-52 1096,-52 1096,-74 1096,-74 1096,-80 1090,-86 1084,-86" fill="#fff5ef" stroke="#deb39c" stroke-width="1.3"></path>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="1018" y="-66.2">S3 · Glue Catalog / Jobs</text>
+<text fill="#17283f" font-family="DejaVu Sans" font-size="11.00" text-anchor="middle" x="1018" y="-54.2">Redshift</text>
+</g>
+<!-- worker&#45;&gt;aws -->
+<g class="edge" id="edge5">
+<title>worker-&gt;aws</title>
+<path d="M811.32,-63C848.42,-63 893.84,-63 932.54,-63" fill="none" stroke="#54739a" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="932.69,-65.45 939.69,-63 932.69,-60.55 932.69,-65.45" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="875.5" y="-66">boto3 / lectura</text>
+</g>
+<!-- aws&#45;&gt;worker -->
+<g class="edge" id="edge6">
+<title>aws-&gt;worker</title>
+<path d="M939.96,-47.01C923.53,-43.6 911,-41 911,-41 911,-41 840,-41 840,-41 840,-41 830.85,-42.99 818.05,-45.78" fill="none" stroke="#54739a" stroke-dasharray="5,2" stroke-width="1.35"></path>
+<polygon fill="#54739a" points="817.38,-43.42 811.06,-47.3 818.42,-48.21 817.38,-43.42" stroke="#54739a" stroke-width="1.35"></polygon>
+<text fill="#425d7b" font-family="DejaVu Sans" font-size="10.00" text-anchor="middle" x="875.5" y="-44">metadatos</text>
+</g>
+</g>
+</svg></div></div></section>
+<section id="sitemap"><h2>2. Sitemap completo — pantallas y navegación</h2>
+<div class="frame"><div class="toolbar"><label for="search">Buscar pantalla:</label><input id="search" placeholder="Redshift, Glue, Diagnóstico, escaneo…" aria-label="Buscar pantalla">
+<button id="minus" aria-label="Reducir zoom">−</button><button id="reset" aria-label="Restablecer zoom">55%</button><button id="plus" aria-label="Ampliar zoom">+</button></div>
+<div id="map-results"></div><div id="map-viewport"><svg height="996pt" viewbox="0.00 0.00 1459.80 995.80" width="1460pt" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g class="graph" id="graph0" transform="scale(1 1) rotate(0) translate(32.4 963.4)">
+<title>sitemap</title>
+<polygon fill="#f6f8fc" points="-32.4,32.4 -32.4,-963.4 1427.4,-963.4 1427.4,32.4 -32.4,32.4" stroke="transparent"></polygon>
+<!-- root&#45;&gt;overview -->
+<g class="edge" id="edge1">
+<title>root-&gt;overview</title>
+<path d="M49.68,-516.26C70.98,-579.16 140,-783 140,-783 140,-783 155.74,-789.42 172.65,-796.32" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="172.02,-798.53 178.9,-798.88 173.74,-794.32 172.02,-798.53" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;data -->
+<g class="edge" id="edge2">
+<title>root-&gt;data</title>
+<path d="M52.58,-516.35C76.6,-564.89 140,-693 140,-693 140,-693 165.32,-713.67 186.24,-730.75" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="184.97,-732.65 191.45,-735 187.85,-729.13 184.97,-732.65" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;processes -->
+<g class="edge" id="edge3">
+<title>root-&gt;processes</title>
+<path d="M62.34,-516.29C93.57,-546.6 155.98,-607.17 190.02,-640.21" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="188.58,-641.99 194.83,-644.88 191.75,-638.72 188.58,-641.99" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;controls -->
+<g class="edge" id="edge4">
+<title>root-&gt;controls</title>
+<path d="M85.09,-512.68C106.47,-520.23 132.87,-529.54 156.16,-537.76" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="155.43,-539.92 162.32,-539.94 156.95,-535.63 155.43,-539.92" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;diag -->
+<g class="edge" id="edge5">
+<title>root-&gt;diag</title>
+<path d="M85.09,-483.32C106.47,-475.77 132.87,-466.46 156.16,-458.24" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="156.95,-460.37 162.32,-456.06 155.43,-456.08 156.95,-460.37" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;history -->
+<g class="edge" id="edge6">
+<title>root-&gt;history</title>
+<path d="M56.28,-479.96C86.55,-437.22 162.65,-329.79 196.64,-281.8" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="198.67,-282.87 200.57,-276.25 194.96,-280.24 198.67,-282.87" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;connections -->
+<g class="edge" id="edge7">
+<title>root-&gt;connections</title>
+<path d="M49.98,-479.87C71.62,-419.33 140,-228 140,-228 140,-228 172.65,-188.02 194.43,-161.35" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="196.28,-162.69 198.63,-156.21 192.75,-159.81 196.28,-162.69" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root&#45;&gt;scan -->
+<g class="edge" id="edge8">
+<title>root-&gt;scan</title>
+<path d="M47.96,-479.97C66.94,-403.27 140,-108 140,-108 140,-108 165.32,-87.33 186.24,-70.25" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="187.85,-71.87 191.45,-66 184.97,-68.35 187.85,-71.87" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- overview&#45;&gt;diag -->
+<g class="edge" id="edge40">
+<title>overview-&gt;diag</title>
+<g id="a_edge40"><a xlink:title="Investigar">
+<path d="M179,-798.7C159.81,-790.98 140,-783 140,-783 140,-783 112.5,-771 112.5,-771 112.5,-771 112.5,-540 112.5,-540 112.5,-540 161.54,-490.96 191.61,-460.89" fill="none" stroke="#f59e0b" stroke-dasharray="5,2" stroke-width="1.3"></path>
+<polygon fill="#f59e0b" points="193.28,-462.44 196.26,-456.24 190.06,-459.22 193.28,-462.44" stroke="#f59e0b" stroke-width="1.3"></polygon>
+</a>
+</g>
+</g>
+<!-- data&#45;&gt;s3 -->
+<g class="edge" id="edge9">
+<title>data-&gt;s3</title>
+<path d="M289.23,-770.46C311.92,-775.84 336.3,-781.61 356.86,-786.48" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="356.54,-788.74 363.39,-788.03 357.59,-784.31 356.54,-788.74" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- data&#45;&gt;rs -->
+<g class="edge" id="edge13">
+<title>data-&gt;rs</title>
+<path d="M259.95,-771.14C275.43,-777.46 289,-783 289,-783 289,-783 344,-872 344,-872 344,-872 356.14,-879.31 369.64,-887.42" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="368.73,-889.53 375.47,-890.93 371.07,-885.63 368.73,-889.53" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- data&#45;&gt;tables -->
+<g class="edge" id="edge18">
+<title>data-&gt;tables</title>
+<path d="M259.95,-771.14C275.43,-777.46 289,-783 289,-783 289,-783 344,-828 344,-828 344,-828 612.73,-841.87 749.92,-848.95" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="750.14,-851.23 756.75,-849.3 750.38,-846.69 750.14,-851.23" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- data&#45;&gt;gmap -->
+<g class="edge" id="edge20">
+<title>data-&gt;gmap</title>
+<path d="M289.23,-747.18C307.37,-745.75 326.6,-744.23 344.09,-742.85" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="344.66,-745.09 350.96,-742.31 344.3,-740.55 344.66,-745.09" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- s3&#45;&gt;bucket -->
+<g class="edge" id="edge10">
+<title>s3-&gt;bucket</title>
+<path d="M449.87,-798C480.69,-798 522.72,-798 556.26,-798" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="556.35,-800.28 562.85,-798 556.35,-795.73 556.35,-800.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- bucket&#45;&gt;prefix -->
+<g class="edge" id="edge11">
+<title>bucket-&gt;prefix</title>
+<path d="M663.21,-796.85C696.03,-796.09 739.22,-795.08 773.22,-794.29" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="773.44,-796.56 779.89,-794.13 773.34,-792.01 773.44,-796.56" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- prefix&#45;&gt;s3table -->
+<g class="edge" id="edge12">
+<title>prefix-&gt;s3table</title>
+<path d="M879.08,-800.57C900.66,-803.93 926.52,-807.96 950.33,-811.68" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="950.22,-813.96 956.99,-812.71 950.92,-809.46 950.22,-813.96" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- rs&#45;&gt;rsw -->
+<g class="edge" id="edge14">
+<title>rs-&gt;rsw</title>
+<path d="M465.55,-909.28C490.92,-909.41 520.78,-909.55 546.89,-909.68" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="546.93,-911.96 553.45,-909.71 546.96,-907.41 546.93,-911.96" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- rsw&#45;&gt;rsdb -->
+<g class="edge" id="edge15">
+<title>rsw-&gt;rsdb</title>
+<path d="M672.61,-910.82C704.81,-911.27 744.42,-911.82 775.66,-912.26" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="775.66,-914.54 782.19,-912.35 775.72,-909.99 775.66,-914.54" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- rsdb&#45;&gt;rsschema -->
+<g class="edge" id="edge16">
+<title>rsdb-&gt;rsschema</title>
+<path d="M876.61,-913C908.67,-913 951.02,-913 981.92,-913" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="982.22,-915.28 988.72,-913 982.22,-910.73 982.22,-915.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- rsschema&#45;&gt;rstable -->
+<g class="edge" id="edge17">
+<title>rsschema-&gt;rstable</title>
+<path d="M1059.08,-913C1081.89,-913 1112.5,-913 1139.13,-913" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="1139.31,-915.28 1145.81,-913 1139.31,-910.73 1139.31,-915.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- tables&#45;&gt;s3table -->
+<g class="edge" id="edge19">
+<title>tables-&gt;s3table</title>
+<path d="M902.18,-841.83C917.89,-839.38 934.54,-836.79 950.3,-834.33" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="950.92,-836.54 956.99,-833.29 950.22,-832.04 950.92,-836.54" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- gmap&#45;&gt;flows -->
+<g class="edge" id="edge21">
+<title>gmap-&gt;flows</title>
+<path d="M462.03,-738C492.83,-738 531.08,-738 561.24,-738" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="561.44,-740.28 567.94,-738 561.44,-735.73 561.44,-740.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- processes&#45;&gt;job -->
+<g class="edge" id="edge22">
+<title>processes-&gt;job</title>
+<path d="M278.24,-667.95C299.31,-669.62 322.78,-671.47 343.77,-673.13" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="343.83,-675.41 350.49,-673.66 344.19,-670.88 343.83,-675.41" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- job&#45;&gt;flows -->
+<g class="edge" id="edge41">
+<title>job-&gt;flows</title>
+<g id="a_edge41"><a xlink:title="Flujos">
+<path d="M462.57,-694.16C493.39,-703.2 531.52,-714.39 561.55,-723.2" fill="none" stroke="#f59e0b" stroke-dasharray="5,2" stroke-width="1.3"></path>
+<polygon fill="#f59e0b" points="560.96,-725.39 567.83,-725.04 562.24,-721.03 560.96,-725.39" stroke="#f59e0b" stroke-width="1.3"></polygon>
+</a>
+</g>
+</g>
+<!-- job&#45;&gt;runs -->
+<g class="edge" id="edge23">
+<title>job-&gt;runs</title>
+<path d="M462.57,-678C479.32,-678 498.24,-678 516.84,-678" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="517.18,-680.28 523.68,-678 517.18,-675.73 517.18,-680.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- controls&#45;&gt;access -->
+<g class="edge" id="edge24">
+<title>controls-&gt;access</title>
+<path d="M272.51,-576C294.39,-582.91 319.49,-590.84 341.95,-597.93" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="341.32,-600.12 348.21,-599.91 342.69,-595.78 341.32,-600.12" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- controls&#45;&gt;audit -->
+<g class="edge" id="edge25">
+<title>controls-&gt;audit</title>
+<path d="M283.56,-558C310.11,-558 339.73,-558 363.12,-558" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="363.36,-560.28 369.86,-558 363.36,-555.73 363.36,-560.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- diag&#45;&gt;validations -->
+<g class="edge" id="edge26">
+<title>diag-&gt;validations</title>
+<path d="M272.51,-456C299.61,-464.56 331.66,-474.68 357.5,-482.84" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="357.05,-485.09 363.93,-484.87 358.42,-480.75 357.05,-485.09" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- diag&#45;&gt;measurements -->
+<g class="edge" id="edge27">
+<title>diag-&gt;measurements</title>
+<path d="M283.56,-438C309.05,-438 337.36,-438 360.28,-438" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="360.4,-440.28 366.9,-438 360.4,-435.73 360.4,-440.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- diag&#45;&gt;recommendations -->
+<g class="edge" id="edge28">
+<title>diag-&gt;recommendations</title>
+<path d="M272.51,-420C294.69,-412.99 320.18,-404.94 342.87,-397.78" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="343.68,-399.91 349.19,-395.78 342.31,-395.57 343.68,-399.91" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- diag&#45;&gt;coverage -->
+<g class="edge" id="edge29">
+<title>diag-&gt;coverage</title>
+<path d="M241.5,-419.79C279.05,-393.49 344,-348 344,-348 344,-348 352.84,-343.69 363.82,-338.33" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="364.88,-340.35 369.73,-335.45 362.89,-336.26 364.88,-340.35" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- history&#45;&gt;history_detail -->
+<g class="edge" id="edge30">
+<title>history-&gt;history_detail</title>
+<path d="M275.1,-258C296.1,-258 319.81,-258 341.19,-258" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="341.24,-260.28 347.74,-258 341.24,-255.73 341.24,-260.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- history&#45;&gt;history_compare -->
+<g class="edge" id="edge31">
+<title>history-&gt;history_compare</title>
+<path d="M272.51,-240C298.91,-231.66 330,-221.84 355.47,-213.8" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="356.31,-215.92 361.82,-211.79 354.94,-211.58 356.31,-215.92" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- history_detail&#45;&gt;scan_select -->
+<g class="edge" id="edge42">
+<title>history_detail-&gt;scan_select</title>
+<g id="a_edge42"><a xlink:title="Repetir">
+<path d="M444.69,-239.86C457.65,-233.54 469,-228 469,-228 469,-228 558.51,-96.54 595.9,-41.65" fill="none" stroke="#f59e0b" stroke-dasharray="5,2" stroke-width="1.3"></path>
+<polygon fill="#f59e0b" points="597.78,-42.92 599.56,-36.27 594.02,-40.36 597.78,-42.92" stroke="#f59e0b" stroke-width="1.3"></polygon>
+</a>
+</g>
+</g>
+<!-- connections&#45;&gt;conn_detail -->
+<g class="edge" id="edge32">
+<title>connections-&gt;conn_detail</title>
+<path d="M280.62,-138C302.92,-138 327.65,-138 349.19,-138" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="349.27,-140.28 355.77,-138 349.27,-135.73 349.27,-140.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- connections&#45;&gt;conn_new -->
+<g class="edge" id="edge33">
+<title>connections-&gt;conn_new</title>
+<path d="M272.51,-120C295.49,-112.74 322.02,-104.36 345.31,-97.01" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="346.27,-99.09 351.79,-94.96 344.9,-94.75 346.27,-99.09" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan&#45;&gt;scan_discover -->
+<g class="edge" id="edge34">
+<title>scan-&gt;scan_discover</title>
+<path d="M264.92,-40.2C293.02,-35.76 328.08,-30.22 356.16,-25.79" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="356.71,-28.01 362.78,-24.75 356,-23.51 356.71,-28.01" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan_discover&#45;&gt;scan_select -->
+<g class="edge" id="edge35">
+<title>scan_discover-&gt;scan_select</title>
+<path d="M450.37,-18C481.55,-18 524.01,-18 557.59,-18" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="557.68,-20.28 564.18,-18 557.68,-15.73 557.68,-20.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan_select&#45;&gt;scan_config -->
+<g class="edge" id="edge36">
+<title>scan_select-&gt;scan_config</title>
+<path d="M661.6,-18C695.85,-18 742,-18 777.09,-18" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="777.46,-20.28 783.96,-18 777.46,-15.73 777.46,-20.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan_config&#45;&gt;scan_review -->
+<g class="edge" id="edge37">
+<title>scan_config-&gt;scan_review</title>
+<path d="M875.15,-18C906.23,-18 947.5,-18 978.54,-18" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="978.9,-20.28 985.4,-18 978.9,-15.73 978.9,-20.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan_review&#45;&gt;scan_execute -->
+<g class="edge" id="edge38">
+<title>scan_review-&gt;scan_execute</title>
+<path d="M1062.86,-18C1087.91,-18 1121.01,-18 1148.13,-18" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="1148.38,-20.28 1154.88,-18 1148.38,-15.73 1148.38,-20.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- scan_execute&#45;&gt;scan_result -->
+<g class="edge" id="edge39">
+<title>scan_execute-&gt;scan_result</title>
+<path d="M1242.08,-18C1259.83,-18 1280.56,-18 1299.06,-18" fill="none" stroke="#b4c3d5" stroke-width="1.3"></path>
+<polygon fill="#b4c3d5" points="1299.27,-20.28 1305.77,-18 1299.27,-15.73 1299.27,-20.28" stroke="#b4c3d5" stroke-width="1.3"></polygon>
+</g>
+<!-- root -->
+<g class="node" id="node1">
+<title>root</title>
+<g id="a_node1"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/overview" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/overview" xlink:title="/overview">
+<path d="M73,-516C73,-516 12,-516 12,-516 6,-516 0,-510 0,-504 0,-504 0,-492 0,-492 0,-486 6,-480 12,-480 12,-480 73,-480 73,-480 79,-480 85,-486 85,-492 85,-492 85,-504 85,-504 85,-510 79,-516 73,-516" fill="#eef5ff" stroke="#1f3456" stroke-width="2.1"></path>
+<text fill="#173b75" font-family="Arial" font-size="11.00" text-anchor="middle" x="42.5" y="-495.2">DATA LENS</text>
+</a>
+</g>
+</g>
+<!-- overview -->
+<g class="node" id="node2">
+<title>overview</title>
+<g id="a_node2"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/overview" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/overview" xlink:title="/overview">
+<path d="M238,-831C238,-831 191,-831 191,-831 185,-831 179,-825 179,-819 179,-819 179,-807 179,-807 179,-801 185,-795 191,-795 191,-795 238,-795 238,-795 244,-795 250,-801 250,-807 250,-807 250,-819 250,-819 250,-825 244,-831 238,-831" fill="#eef5ff" stroke="#7951bd" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-810.2">Resumen</text>
+</a>
+</g>
+</g>
+<!-- data -->
+<g class="node" id="node3">
+<title>data</title>
+<g id="a_node3"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data" xlink:title="/data">
+<path d="M277,-771C277,-771 152,-771 152,-771 146,-771 140,-765 140,-759 140,-759 140,-747 140,-747 140,-741 146,-735 152,-735 152,-735 277,-735 277,-735 283,-735 289,-741 289,-747 289,-747 289,-759 289,-759 289,-765 283,-771 277,-771" fill="#eef5ff" stroke="#1287a5" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-750.2">Datos · Inventario general</text>
+</a>
+</g>
+</g>
+<!-- s3 -->
+<g class="node" id="node4">
+<title>s3</title>
+<g id="a_node4"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3" xlink:title="/data/s3">
+<path d="M437.5,-816C437.5,-816 375.5,-816 375.5,-816 369.5,-816 363.5,-810 363.5,-804 363.5,-804 363.5,-792 363.5,-792 363.5,-786 369.5,-780 375.5,-780 375.5,-780 437.5,-780 437.5,-780 443.5,-780 449.5,-786 449.5,-792 449.5,-792 449.5,-804 449.5,-804 449.5,-810 443.5,-816 437.5,-816" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-795.2">S3 · Buckets</text>
+</a>
+</g>
+</g>
+<!-- bucket -->
+<g class="node" id="node5">
+<title>bucket</title>
+<g id="a_node5"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3/dl-ventas-curated" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3/dl-ventas-curated" xlink:title="/data/s3/dl-ventas-curated">
+<path d="M651,-816C651,-816 575,-816 575,-816 569,-816 563,-810 563,-804 563,-804 563,-792 563,-792 563,-786 569,-780 575,-780 575,-780 651,-780 651,-780 657,-780 663,-786 663,-792 663,-792 663,-804 663,-804 663,-810 657,-816 651,-816" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="613" y="-795.2">Ficha de bucket</text>
+</a>
+</g>
+</g>
+<!-- prefix -->
+<g class="node" id="node6">
+<title>prefix</title>
+<g id="a_node6"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3/dl-ventas-curated/prefix/ordenes_diarias" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/s3/dl-ventas-curated/prefix/ordenes_diarias" xlink:title="/data/s3/dl-ventas-curated/prefix/ordenes_diarias">
+<path d="M867,-811C867,-811 792,-811 792,-811 786,-811 780,-805 780,-799 780,-799 780,-787 780,-787 780,-781 786,-775 792,-775 792,-775 867,-775 867,-775 873,-775 879,-781 879,-787 879,-787 879,-799 879,-799 879,-805 873,-811 867,-811" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="829.5" y="-790.2">Prefijo / objetos</text>
+</a>
+</g>
+</g>
+<!-- s3table -->
+<g class="node" id="node7">
+<title>s3table</title>
+<g id="a_node7"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/tables/s3/ordenes_diarias" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/tables/s3/ordenes_diarias" xlink:title="/data/tables/s3/ordenes_diarias">
+<path d="M1079,-841C1079,-841 969,-841 969,-841 963,-841 957,-835 957,-829 957,-829 957,-817 957,-817 957,-811 963,-805 969,-805 969,-805 1079,-805 1079,-805 1085,-805 1091,-811 1091,-817 1091,-817 1091,-829 1091,-829 1091,-835 1085,-841 1079,-841" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1024" y="-820.2">Dataset S3 catalogado</text>
+</a>
+</g>
+</g>
+<!-- rs -->
+<g class="node" id="node8">
+<title>rs</title>
+<g id="a_node8"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift" xlink:title="/data/redshift">
+<path d="M453.5,-927C453.5,-927 359.5,-927 359.5,-927 353.5,-927 347.5,-921 347.5,-915 347.5,-915 347.5,-903 347.5,-903 347.5,-897 353.5,-891 359.5,-891 359.5,-891 453.5,-891 453.5,-891 459.5,-891 465.5,-897 465.5,-903 465.5,-903 465.5,-915 465.5,-915 465.5,-921 459.5,-927 453.5,-927" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-906.2">Redshift · Entornos</text>
+</a>
+</g>
+</g>
+<!-- rsw -->
+<g class="node" id="node9">
+<title>rsw</title>
+<g id="a_node9"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod" xlink:title="/data/redshift/analytics-prod">
+<path d="M660.5,-928C660.5,-928 565.5,-928 565.5,-928 559.5,-928 553.5,-922 553.5,-916 553.5,-916 553.5,-904 553.5,-904 553.5,-898 559.5,-892 565.5,-892 565.5,-892 660.5,-892 660.5,-892 666.5,-892 672.5,-898 672.5,-904 672.5,-904 672.5,-916 672.5,-916 672.5,-922 666.5,-928 660.5,-928" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="613" y="-907.2">Cluster / workgroup</text>
+</a>
+</g>
+</g>
+<!-- rsdb -->
+<g class="node" id="node10">
+<title>rsdb</title>
+<g id="a_node10"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas" xlink:title="/data/redshift/analytics-prod/db/ventas">
+<path d="M864.5,-931C864.5,-931 794.5,-931 794.5,-931 788.5,-931 782.5,-925 782.5,-919 782.5,-919 782.5,-907 782.5,-907 782.5,-901 788.5,-895 794.5,-895 794.5,-895 864.5,-895 864.5,-895 870.5,-895 876.5,-901 876.5,-907 876.5,-907 876.5,-919 876.5,-919 876.5,-925 870.5,-931 864.5,-931" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="829.5" y="-910.2">Base de datos</text>
+</a>
+</g>
+</g>
+<!-- rsschema -->
+<g class="node" id="node11">
+<title>rsschema</title>
+<g id="a_node11"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas/schema/public" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas/schema/public" xlink:title="/data/redshift/analytics-prod/db/ventas/schema/public">
+<path d="M1047,-931C1047,-931 1001,-931 1001,-931 995,-931 989,-925 989,-919 989,-919 989,-907 989,-907 989,-901 995,-895 1001,-895 1001,-895 1047,-895 1047,-895 1053,-895 1059,-901 1059,-907 1059,-907 1059,-919 1059,-919 1059,-925 1053,-931 1047,-931" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1024" y="-910.2">Esquema</text>
+</a>
+</g>
+</g>
+<!-- rstable -->
+<g class="node" id="node12">
+<title>rstable</title>
+<g id="a_node12"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas/schema/public/table/pedidos" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/redshift/analytics-prod/db/ventas/schema/public/table/pedidos" xlink:title="/data/redshift/analytics-prod/db/ventas/schema/public/table/pedidos">
+<path d="M1239,-931C1239,-931 1158,-931 1158,-931 1152,-931 1146,-925 1146,-919 1146,-919 1146,-907 1146,-907 1146,-901 1152,-895 1158,-895 1158,-895 1239,-895 1239,-895 1245,-895 1251,-901 1251,-907 1251,-907 1251,-919 1251,-919 1251,-925 1245,-931 1239,-931" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1198.5" y="-910.2">Tabla / columnas</text>
+</a>
+</g>
+</g>
+<!-- tables -->
+<g class="node" id="node13">
+<title>tables</title>
+<g id="a_node13"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/tables" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/tables" xlink:title="/data/tables">
+<path d="M890,-871C890,-871 769,-871 769,-871 763,-871 757,-865 757,-859 757,-859 757,-847 757,-847 757,-841 763,-835 769,-835 769,-835 890,-835 890,-835 896,-835 902,-841 902,-847 902,-847 902,-859 902,-859 902,-865 896,-871 890,-871" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="829.5" y="-850.2">Tablas · Vista transversal</text>
+</a>
+</g>
+</g>
+<!-- gmap -->
+<g class="node" id="node14">
+<title>gmap</title>
+<g id="a_node14"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/lineage?mode=structure" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/lineage?mode=structure" xlink:title="/data/lineage?mode=structure">
+<path d="M450,-756C450,-756 363,-756 363,-756 357,-756 351,-750 351,-744 351,-744 351,-732 351,-732 351,-726 357,-720 363,-720 363,-720 450,-720 450,-720 456,-720 462,-726 462,-732 462,-732 462,-744 462,-744 462,-750 456,-756 450,-756" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-735.2">Mapa · Estructura</text>
+</a>
+</g>
+</g>
+<!-- flows -->
+<g class="node" id="node15">
+<title>flows</title>
+<g id="a_node15"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/data/lineage?mode=flow" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/data/lineage?mode=flow" xlink:title="/data/lineage?mode=flow">
+<path d="M646,-756C646,-756 580,-756 580,-756 574,-756 568,-750 568,-744 568,-744 568,-732 568,-732 568,-726 574,-720 580,-720 580,-720 646,-720 646,-720 652,-720 658,-726 658,-732 658,-732 658,-744 658,-744 658,-750 652,-756 646,-756" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="613" y="-735.2">Mapa · Flujos</text>
+</a>
+</g>
+</g>
+<!-- processes -->
+<g class="node" id="node16">
+<title>processes</title>
+<g id="a_node16"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/processes" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/processes" xlink:title="/processes">
+<path d="M266,-681C266,-681 163,-681 163,-681 157,-681 151,-675 151,-669 151,-669 151,-657 151,-657 151,-651 157,-645 163,-645 163,-645 266,-645 266,-645 272,-645 278,-651 278,-657 278,-657 278,-669 278,-669 278,-675 272,-681 266,-681" fill="#eef5ff" stroke="#8052bc" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-660.2">Procesos · Glue Jobs</text>
+</a>
+</g>
+</g>
+<!-- job -->
+<g class="node" id="node17">
+<title>job</title>
+<g id="a_node17"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/processes/etl-pedidos" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/processes/etl-pedidos" xlink:title="/processes/etl-pedidos">
+<path d="M450.5,-696C450.5,-696 362.5,-696 362.5,-696 356.5,-696 350.5,-690 350.5,-684 350.5,-684 350.5,-672 350.5,-672 350.5,-666 356.5,-660 362.5,-660 362.5,-660 450.5,-660 450.5,-660 456.5,-660 462.5,-666 462.5,-672 462.5,-672 462.5,-684 462.5,-684 462.5,-690 456.5,-696 450.5,-696" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-675.2">Ficha de Glue Job</text>
+</a>
+</g>
+</g>
+<!-- runs -->
+<g class="node" id="node18">
+<title>runs</title>
+<g id="a_node18"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/processes/etl-pedidos" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/processes/etl-pedidos" xlink:title="/processes/etl-pedidos">
+<path d="M690,-696C690,-696 536,-696 536,-696 530,-696 524,-690 524,-684 524,-684 524,-672 524,-672 524,-666 530,-660 536,-660 536,-660 690,-660 690,-660 696,-660 702,-666 702,-672 702,-672 702,-684 702,-684 702,-690 696,-696 690,-696" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="613" y="-675.2">Ejecuciones / rendimiento (tabs)</text>
+</a>
+</g>
+</g>
+<!-- controls -->
+<g class="node" id="node19">
+<title>controls</title>
+<g id="a_node19"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/controls" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/controls" xlink:title="/controls">
+<path d="M271.5,-576C271.5,-576 157.5,-576 157.5,-576 151.5,-576 145.5,-570 145.5,-564 145.5,-564 145.5,-552 145.5,-552 145.5,-546 151.5,-540 157.5,-540 157.5,-540 271.5,-540 271.5,-540 277.5,-540 283.5,-546 283.5,-552 283.5,-552 283.5,-564 283.5,-564 283.5,-570 277.5,-576 271.5,-576" fill="#eef5ff" stroke="#356aab" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-555.2">Controles transversales</text>
+</a>
+</g>
+</g>
+<!-- access -->
+<g class="node" id="node20">
+<title>access</title>
+<g id="a_node20"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/controls/access" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/controls/access" xlink:title="/controls/access">
+<path d="M457,-636C457,-636 356,-636 356,-636 350,-636 344,-630 344,-624 344,-624 344,-612 344,-612 344,-606 350,-600 356,-600 356,-600 457,-600 457,-600 463,-600 469,-606 469,-612 469,-612 469,-624 469,-624 469,-630 463,-636 457,-636" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-615.2">IAM Access Analyzer</text>
+</a>
+</g>
+</g>
+<!-- audit -->
+<g class="node" id="node21">
+<title>audit</title>
+<g id="a_node21"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/controls/audit" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/controls/audit" xlink:title="/controls/audit">
+<path d="M431,-576C431,-576 382,-576 382,-576 376,-576 370,-570 370,-564 370,-564 370,-552 370,-552 370,-546 376,-540 382,-540 382,-540 431,-540 431,-540 437,-540 443,-546 443,-552 443,-552 443,-564 443,-564 443,-570 437,-576 431,-576" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-555.2">CloudTrail</text>
+</a>
+</g>
+</g>
+<!-- diag -->
+<g class="node" id="node22">
+<title>diag</title>
+<g id="a_node22"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis" xlink:title="/diagnosis">
+<path d="M271.5,-456C271.5,-456 157.5,-456 157.5,-456 151.5,-456 145.5,-450 145.5,-444 145.5,-444 145.5,-432 145.5,-432 145.5,-426 151.5,-420 157.5,-420 157.5,-420 271.5,-420 271.5,-420 277.5,-420 283.5,-426 283.5,-432 283.5,-432 283.5,-444 283.5,-444 283.5,-450 277.5,-456 271.5,-456" fill="#eef5ff" stroke="#ad4b68" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-435.2">Diagnóstico · Hallazgos</text>
+</a>
+</g>
+</g>
+<!-- validations -->
+<g class="node" id="node23">
+<title>validations</title>
+<g id="a_node23"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/validations" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/validations" xlink:title="/diagnosis/validations">
+<path d="M437,-516C437,-516 376,-516 376,-516 370,-516 364,-510 364,-504 364,-504 364,-492 364,-492 364,-486 370,-480 376,-480 376,-480 437,-480 437,-480 443,-480 449,-486 449,-492 449,-492 449,-504 449,-504 449,-510 443,-516 437,-516" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-495.2">Validaciones</text>
+</a>
+</g>
+</g>
+<!-- measurements -->
+<g class="node" id="node24">
+<title>measurements</title>
+<g id="a_node24"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/measurements" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/measurements" xlink:title="/diagnosis/measurements">
+<path d="M434,-456C434,-456 379,-456 379,-456 373,-456 367,-450 367,-444 367,-444 367,-432 367,-432 367,-426 373,-420 379,-420 379,-420 434,-420 434,-420 440,-420 446,-426 446,-432 446,-432 446,-444 446,-444 446,-450 440,-456 434,-456" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-435.2">Mediciones</text>
+</a>
+</g>
+</g>
+<!-- recommendations -->
+<g class="node" id="node25">
+<title>recommendations</title>
+<g id="a_node25"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/recommendations" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/recommendations" xlink:title="/diagnosis/recommendations">
+<path d="M451.5,-396C451.5,-396 361.5,-396 361.5,-396 355.5,-396 349.5,-390 349.5,-384 349.5,-384 349.5,-372 349.5,-372 349.5,-366 355.5,-360 361.5,-360 361.5,-360 451.5,-360 451.5,-360 457.5,-360 463.5,-366 463.5,-372 463.5,-372 463.5,-384 463.5,-384 463.5,-390 457.5,-396 451.5,-396" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-375.2">Recomendaciones</text>
+</a>
+</g>
+</g>
+<!-- coverage -->
+<g class="node" id="node26">
+<title>coverage</title>
+<g id="a_node26"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/catalog" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/diagnosis/catalog" xlink:title="/diagnosis/catalog">
+<path d="M431,-336C431,-336 382,-336 382,-336 376,-336 370,-330 370,-324 370,-324 370,-312 370,-312 370,-306 376,-300 382,-300 382,-300 431,-300 431,-300 437,-300 443,-306 443,-312 443,-312 443,-324 443,-324 443,-330 437,-336 431,-336" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-315.2">Cobertura</text>
+</a>
+</g>
+</g>
+<!-- history -->
+<g class="node" id="node27">
+<title>history</title>
+<g id="a_node27"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/history" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/history" xlink:title="/history">
+<path d="M263,-276C263,-276 166,-276 166,-276 160,-276 154,-270 154,-264 154,-264 154,-252 154,-252 154,-246 160,-240 166,-240 166,-240 263,-240 263,-240 269,-240 275,-246 275,-252 275,-252 275,-264 275,-264 275,-270 269,-276 263,-276" fill="#eef5ff" stroke="#5b6f88" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-255.2">Historial · Escaneos</text>
+</a>
+</g>
+</g>
+<!-- history_detail -->
+<g class="node" id="node28">
+<title>history_detail</title>
+<g id="a_node28"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/history/DL-014" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/history/DL-014" xlink:title="/history/DL-014">
+<path d="M453,-276C453,-276 360,-276 360,-276 354,-276 348,-270 348,-264 348,-264 348,-252 348,-252 348,-246 354,-240 360,-240 360,-240 453,-240 453,-240 459,-240 465,-246 465,-252 465,-252 465,-264 465,-264 465,-270 459,-276 453,-276" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-255.2">Detalle de escaneo</text>
+</a>
+</g>
+</g>
+<!-- history_compare -->
+<g class="node" id="node29">
+<title>history_compare</title>
+<g id="a_node29"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/history/compare" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/history/compare" xlink:title="/history/compare">
+<path d="M439,-216C439,-216 374,-216 374,-216 368,-216 362,-210 362,-204 362,-204 362,-192 362,-192 362,-186 368,-180 374,-180 374,-180 439,-180 439,-180 445,-180 451,-186 451,-192 451,-192 451,-204 451,-204 451,-210 445,-216 439,-216" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-195.2">Comparación</text>
+</a>
+</g>
+</g>
+<!-- connections -->
+<g class="node" id="node30">
+<title>connections</title>
+<g id="a_node30"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/connections" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/connections" xlink:title="/connections">
+<path d="M268.5,-156C268.5,-156 160.5,-156 160.5,-156 154.5,-156 148.5,-150 148.5,-144 148.5,-144 148.5,-132 148.5,-132 148.5,-126 154.5,-120 160.5,-120 160.5,-120 268.5,-120 268.5,-120 274.5,-120 280.5,-126 280.5,-132 280.5,-132 280.5,-144 280.5,-144 280.5,-150 274.5,-156 268.5,-156" fill="#eef5ff" stroke="#475a76" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-135.2">Conexiones · Cuentas</text>
+</a>
+</g>
+</g>
+<!-- conn_detail -->
+<g class="node" id="node31">
+<title>conn_detail</title>
+<g id="a_node31"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/connections/111122223333" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/connections/111122223333" xlink:title="/connections/111122223333">
+<path d="M445,-156C445,-156 368,-156 368,-156 362,-156 356,-150 356,-144 356,-144 356,-132 356,-132 356,-126 362,-120 368,-120 368,-120 445,-120 445,-120 451,-120 457,-126 457,-132 457,-132 457,-144 457,-144 457,-150 451,-156 445,-156" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-135.2">Ficha de cuenta</text>
+</a>
+</g>
+</g>
+<!-- conn_new -->
+<g class="node" id="node32">
+<title>conn_new</title>
+<g id="a_node32"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/connections/new" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/connections/new" xlink:title="/connections/new">
+<path d="M449,-96C449,-96 364,-96 364,-96 358,-96 352,-90 352,-84 352,-84 352,-72 352,-72 352,-66 358,-60 364,-60 364,-60 449,-60 449,-60 455,-60 461,-66 461,-72 461,-72 461,-84 461,-84 461,-90 455,-96 449,-96" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-75.2">Agregar conexión</text>
+</a>
+</g>
+</g>
+<!-- scan -->
+<g class="node" id="node33">
+<title>scan</title>
+<g id="a_node33"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/account" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/account" xlink:title="/scan/account">
+<path d="M252.5,-66C252.5,-66 176.5,-66 176.5,-66 170.5,-66 164.5,-60 164.5,-54 164.5,-54 164.5,-42 164.5,-42 164.5,-36 170.5,-30 176.5,-30 176.5,-30 252.5,-30 252.5,-30 258.5,-30 264.5,-36 264.5,-42 264.5,-42 264.5,-54 264.5,-54 264.5,-60 258.5,-66 252.5,-66" fill="#eef5ff" stroke="#0a72c9" stroke-width="2.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="214.5" y="-45.2">Nuevo escaneo</text>
+</a>
+</g>
+</g>
+<!-- scan_discover -->
+<g class="node" id="node34">
+<title>scan_discover</title>
+<g id="a_node34"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/discover" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/discover" xlink:title="/scan/discover">
+<path d="M438,-36C438,-36 375,-36 375,-36 369,-36 363,-30 363,-24 363,-24 363,-12 363,-12 363,-6 369,0 375,0 375,0 438,0 438,0 444,0 450,-6 450,-12 450,-12 450,-24 450,-24 450,-30 444,-36 438,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="406.5" y="-15.2">2 · Descubrir</text>
+</a>
+</g>
+</g>
+<!-- scan_select -->
+<g class="node" id="node35">
+<title>scan_select</title>
+<g id="a_node35"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/select" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/select" xlink:title="/scan/select">
+<path d="M649.5,-36C649.5,-36 576.5,-36 576.5,-36 570.5,-36 564.5,-30 564.5,-24 564.5,-24 564.5,-12 564.5,-12 564.5,-6 570.5,0 576.5,0 576.5,0 649.5,0 649.5,0 655.5,0 661.5,-6 661.5,-12 661.5,-12 661.5,-24 661.5,-24 661.5,-30 655.5,-36 649.5,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="613" y="-15.2">3 · Seleccionar</text>
+</a>
+</g>
+</g>
+<!-- scan_config -->
+<g class="node" id="node36">
+<title>scan_config</title>
+<g id="a_node36"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/configure" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/configure" xlink:title="/scan/configure">
+<path d="M863,-36C863,-36 796,-36 796,-36 790,-36 784,-30 784,-24 784,-24 784,-12 784,-12 784,-6 790,0 796,0 796,0 863,0 863,0 869,0 875,-6 875,-12 875,-12 875,-24 875,-24 875,-30 869,-36 863,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="829.5" y="-15.2">4 · Configurar</text>
+</a>
+</g>
+</g>
+<!-- scan_review -->
+<g class="node" id="node37">
+<title>scan_review</title>
+<g id="a_node37"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/review" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/review" xlink:title="/scan/review">
+<path d="M1050.5,-36C1050.5,-36 997.5,-36 997.5,-36 991.5,-36 985.5,-30 985.5,-24 985.5,-24 985.5,-12 985.5,-12 985.5,-6 991.5,0 997.5,0 997.5,0 1050.5,0 1050.5,0 1056.5,0 1062.5,-6 1062.5,-12 1062.5,-12 1062.5,-24 1062.5,-24 1062.5,-30 1056.5,-36 1050.5,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1024" y="-15.2">5 · Revisar</text>
+</a>
+</g>
+</g>
+<!-- scan_execute -->
+<g class="node" id="node38">
+<title>scan_execute</title>
+<g id="a_node38"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/execute" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/execute" xlink:title="/scan/execute">
+<path d="M1230,-36C1230,-36 1167,-36 1167,-36 1161,-36 1155,-30 1155,-24 1155,-24 1155,-12 1155,-12 1155,-6 1161,0 1167,0 1167,0 1230,0 1230,0 1236,0 1242,-6 1242,-12 1242,-12 1242,-24 1242,-24 1242,-30 1236,-36 1230,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1198.5" y="-15.2">6 · Ejecución</text>
+</a>
+</g>
+</g>
+<!-- scan_result -->
+<g class="node" id="node39">
+<title>scan_result</title>
+<g id="a_node39"><a href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/result" target="_blank" xlink:href="https://monsalves.github.io/data-lens/piloto-v3/#/scan/result" xlink:title="/scan/result">
+<path d="M1383,-36C1383,-36 1318,-36 1318,-36 1312,-36 1306,-30 1306,-24 1306,-24 1306,-12 1306,-12 1306,-6 1312,0 1318,0 1318,0 1383,0 1383,0 1389,0 1395,-6 1395,-12 1395,-12 1395,-24 1395,-24 1395,-30 1389,-36 1383,-36" fill="#ffffff" stroke="#bdcadd" stroke-width="1.1"></path>
+<text fill="#243850" font-family="Arial" font-size="11.00" text-anchor="middle" x="1350.5" y="-15.2">7 · Resultado</text>
+</a>
+</g>
+</g>
+</g>
+</svg></div></div>
+<p class="note">Sitemap completo recuperado de la v3.7: 39 nodos. Los nodos llevan al prototipo publicado v3.8.2. Las flechas principales representan jerarquía y las naranjas punteadas, saltos entre secciones. Algunas pestañas son vistas internas, no rutas diferentes.</p>
+</section><footer>Data Lens · Documento de alcance inicial, stack y arquitectura local · Material de diseño; el backend de FastAPI no está implementado en la demo HTML.</footer>
+</main>
+<script>
+const nodes=[{"id": "root", "label": "DATA LENS", "route": "/overview"}, {"id": "overview", "label": "Resumen", "route": "/overview"}, {"id": "data", "label": "Datos · Inventario general", "route": "/data"}, {"id": "s3", "label": "S3 · Buckets", "route": "/data/s3"}, {"id": "bucket", "label": "Ficha de bucket", "route": "/data/s3/dl-ventas-curated"}, {"id": "prefix", "label": "Prefijo / objetos", "route": "/data/s3/dl-ventas-curated/prefix/ordenes_diarias"}, {"id": "s3table", "label": "Dataset S3 catalogado", "route": "/data/tables/s3/ordenes_diarias"}, {"id": "rs", "label": "Redshift · Entornos", "route": "/data/redshift"}, {"id": "rsw", "label": "Cluster / workgroup", "route": "/data/redshift/analytics-prod"}, {"id": "rsdb", "label": "Base de datos", "route": "/data/redshift/analytics-prod/db/ventas"}, {"id": "rsschema", "label": "Esquema", "route": "/data/redshift/analytics-prod/db/ventas/schema/public"}, {"id": "rstable", "label": "Tabla / columnas", "route": "/data/redshift/analytics-prod/db/ventas/schema/public/table/pedidos"}, {"id": "tables", "label": "Tablas · Vista transversal", "route": "/data/tables"}, {"id": "gmap", "label": "Mapa · Estructura", "route": "/data/lineage?mode=structure"}, {"id": "flows", "label": "Mapa · Flujos", "route": "/data/lineage?mode=flow"}, {"id": "processes", "label": "Procesos · Glue Jobs", "route": "/processes"}, {"id": "job", "label": "Ficha de Glue Job", "route": "/processes/etl-pedidos"}, {"id": "runs", "label": "Ejecuciones / rendimiento (tabs)", "route": "/processes/etl-pedidos"}, {"id": "controls", "label": "Controles transversales", "route": "/controls"}, {"id": "access", "label": "IAM Access Analyzer", "route": "/controls/access"}, {"id": "audit", "label": "CloudTrail", "route": "/controls/audit"}, {"id": "diag", "label": "Diagnóstico · Hallazgos", "route": "/diagnosis"}, {"id": "validations", "label": "Validaciones", "route": "/diagnosis/validations"}, {"id": "measurements", "label": "Mediciones", "route": "/diagnosis/measurements"}, {"id": "recommendations", "label": "Recomendaciones", "route": "/diagnosis/recommendations"}, {"id": "coverage", "label": "Cobertura", "route": "/diagnosis/catalog"}, {"id": "history", "label": "Historial · Escaneos", "route": "/history"}, {"id": "history_detail", "label": "Detalle de escaneo", "route": "/history/DL-014"}, {"id": "history_compare", "label": "Comparación", "route": "/history/compare"}, {"id": "connections", "label": "Conexiones · Cuentas", "route": "/connections"}, {"id": "conn_detail", "label": "Ficha de cuenta", "route": "/connections/111122223333"}, {"id": "conn_new", "label": "Agregar conexión", "route": "/connections/new"}, {"id": "scan", "label": "Nuevo escaneo", "route": "/scan/account"}, {"id": "scan_discover", "label": "2 · Descubrir", "route": "/scan/discover"}, {"id": "scan_select", "label": "3 · Seleccionar", "route": "/scan/select"}, {"id": "scan_config", "label": "4 · Configurar", "route": "/scan/configure"}, {"id": "scan_review", "label": "5 · Revisar", "route": "/scan/review"}, {"id": "scan_execute", "label": "6 · Ejecución", "route": "/scan/execute"}, {"id": "scan_result", "label": "7 · Resultado", "route": "/scan/result"}];
+const base="https://monsalves.github.io/data-lens/piloto-v3/";
+let zoomScale=.55;
+const svg=document.querySelector('#map-viewport svg');
+const viewport=document.querySelector('#map-viewport');
+const startWidth=parseFloat(svg.getAttribute('width'))||1460;
+function setZoom(){ svg.style.width=Math.round(startWidth*zoomScale)+'pt'; document.getElementById('reset').textContent=Math.round(zoomScale*100)+'%'; }
+setZoom();
+document.getElementById('plus').addEventListener('click',()=>{zoomScale=Math.min(2.5,Math.round((zoomScale+.2)*10)/10);setZoom();});
+document.getElementById('minus').addEventListener('click',()=>{zoomScale=Math.max(.4,Math.round((zoomScale-.2)*10)/10);setZoom();});
+document.getElementById('reset').addEventListener('click',()=>{zoomScale=.55;setZoom();});
+const search=document.getElementById('search'),result=document.getElementById('map-results');
+search.addEventListener('input',()=>{ const q=search.value.trim().toLocaleLowerCase('es');result.replaceChildren();if(!q)return;
+for (const n of nodes.filter(n=>n.label.toLocaleLowerCase('es').includes(q)||n.route.toLocaleLowerCase('es').includes(q)).slice(0,15)) {const a=document.createElement('a');a.href=base+'#'+n.route;a.target='_blank';a.rel='noopener noreferrer';a.textContent=n.label;result.appendChild(a)}
+});
+requestAnimationFrame(()=>{const root=[...svg.querySelectorAll('g.node')].find(n=>n.querySelector('title')?.textContent==='root');if(root){const box=root.getBoundingClientRect(),vb=viewport.getBoundingClientRect();viewport.scrollTop+=box.top-vb.top+box.height/2-viewport.clientHeight/2;}});
