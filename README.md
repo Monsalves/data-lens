@@ -3,7 +3,7 @@
 Marco de trabajo y planificación del proyecto.
 
 - **Portal web:** [Abrir Data Lens](https://monsalves.github.io/data-lens/)
-- **Prototipos navegables (demostración).** [Versión 1.0](https://monsalves.github.io/data-lens/piloto/) · [Versión 2.0](https://monsalves.github.io/data-lens/piloto-v2/) · **[Versión 3.0 — interfaz integrada v3.7](https://monsalves.github.io/data-lens/piloto-v3/)**. Las tres versiones usan información ilustrativa, sin conexión activa a AWS.
+- **Prototipos navegables (demostración).** [Versión 1.0](https://monsalves.github.io/data-lens/piloto/) · [Versión 2.0](https://monsalves.github.io/data-lens/piloto-v2/) · **[Versión 3.0 — interfaz integrada v3.8](https://monsalves.github.io/data-lens/piloto-v3/)**. Las tres versiones usan información ilustrativa, sin conexión activa a AWS.
 - **Marco de trabajo 1.4:** [Markdown](metodologia/Marco_Trabajo_Datos_v1_4.md)
 - **Plantilla por fases:** [Excel F0–F3 y matriz](metodologia/Plantilla_Assessment_Datos_F0_F3.xlsx)
 - **Planificación:** [Planificacion.xlsx](planificacion/Planificacion.xlsx)
@@ -19,7 +19,7 @@ Marco de trabajo y planificación del proyecto.
 | S02 | 04–10 nov 2026 | Diseñar Mockups navegables del prototipo | Mockup navegable con inventario de ejemplo y 13 métricas simuladas. | 🟢 Terminado | [Prototipo 1.0](prototipo/frontend/README.md) · [Prototipo 2.0](prototipo/frontend-v2/README.md) |
 | S03 | 11–17 nov 2026 | Investigar y validar técnicamente los servicios AWS relevantes para evaluar la capa de datos. | Mapa preliminar de servicios AWS y especificación de las 13 métricas del piloto. | 🟢 Terminado | [Mapa preliminar de servicios](investigacion/Servicios_AWS_S03_borrador.md) · [Diagrama de las 13 métricas del piloto](investigacion/Diagrama_Metricas_Piloto_13.html) |
 | S04 | 18–24 nov 2026 | Comparar soluciones existentes, identificar oportunidades de reutilización | Documento de Análisis comparativo y oportunidades de reutilización. | 🟢 Terminado | [Documento de Análisis comparativo y oportunidades de reutilización.](investigacion/Comparacion_Soluciones_Existentes_S04.md) |
-| S04 | 18–24 nov 2026 | Rediseñar mockups de la versión anterior. | Frontend rediseñado y navegable (prototipo visual 3.0). | 🟡 En progreso | [Frontend v3.7 publicado](public/piloto-v3/index.html) |
+| S04 | 18–24 nov 2026 | Rediseñar mockups de la versión anterior. | Frontend rediseñado y navegable (prototipo visual 3.0). | 🟡 En progreso | [Frontend v3.8 publicado](public/piloto-v3/index.html) |
 | S04 | 18–24 nov 2026 | Definir stack tecnológico, arquitectura y alcance | Stack tecnológico, arquitectura y alcance del prototipo documentados. | 🟡 En progreso | — |
 | S05 | 25 nov–01 dic 2026 | Desarrollar e integrar los componentes principales del prototipo con las capacidades técnicas previamente validadas. | Primera versión funcional del prototipo (MVP). | ⚪ Pendiente | — |
 | S06 | 02–08 dic 2026 | Presentar y evaluar el prototipo e incorporar ajustes tras las pruebas y retroalimentación. | MVP actualizado con ajustes tras feedback recibido. | ⚪ Pendiente | — |
